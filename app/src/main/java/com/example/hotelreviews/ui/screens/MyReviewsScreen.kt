@@ -1,44 +1,81 @@
 package com.example.hotelreviews.ui.screens
 
+import android.widget.ImageView
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.*
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
+import com.example.hotelreviews.model.Review
 import com.example.hotelreviews.ui.theme.HotelReviewsTheme
 import com.example.hotelreviews.ui.theme.PrimaryBlue
+import com.squareup.picasso.Picasso
 
 @Composable
-fun MyReviewsScreen() {
+fun MyReviewsScreen(
+    reviews: List<Review>,
+    isLoading: Boolean,
+    onAddReviewClick: () -> Unit,
+    onLogoutClick: () -> Unit
+) {
     Scaffold(
         topBar = {
-            HeaderSection()
+            HeaderSection(reviews.size, onLogoutClick)
         },
-        bottomBar = {
-            BottomNavigationBar()
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = onAddReviewClick,
+                containerColor = PrimaryBlue,
+                contentColor = Color.White
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Add Review")
+            }
         }
     ) { paddingValues ->
-        EmptyReviewsContent(modifier = Modifier.padding(paddingValues))
+        Box(modifier = Modifier.padding(paddingValues)) {
+            if (reviews.isEmpty() && !isLoading) {
+                EmptyReviewsContent(onAddReviewClick = onAddReviewClick)
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    items(reviews) { review ->
+                        ReviewItem(review = review)
+                    }
+                }
+            }
+
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center),
+                    color = PrimaryBlue
+                )
+            }
+        }
     }
 }
 
 @Composable
-fun HeaderSection() {
+fun HeaderSection(reviewCount: Int, onLogoutClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -71,132 +108,121 @@ fun HeaderSection() {
                     )
                 )
                 Text(
-                    text = "0 reviews",
+                    text = "$reviewCount reviews",
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color.Gray
                 )
             }
         }
 
-        TextButton(onClick = { /* Handle logout */ }) {
+        IconButton(onClick = onLogoutClick) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.Logout,
-                contentDescription = null,
-                modifier = Modifier.size(20.dp),
+                contentDescription = "Logout",
                 tint = Color.Gray
-            )
-            Spacer(modifier = Modifier.width(4.dp))
-            Text(
-                text = "Logout",
-                color = Color.Gray,
-                fontWeight = FontWeight.Medium
             )
         }
     }
 }
 
 @Composable
-fun EmptyReviewsContent(modifier: Modifier = Modifier) {
+fun ReviewItem(review: Review) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(modifier = Modifier.padding(12.dp)) {
+            if (review.imageUrl.isNotEmpty()) {
+                PicassoImage(
+                    url = review.imageUrl,
+                    modifier = Modifier
+                        .size(80.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+            }
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = review.hotelName,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    repeat(5) { index ->
+                        Icon(
+                            imageVector = if (index < review.rating) Icons.Filled.Star else Icons.Filled.StarOutline,
+                            contentDescription = null,
+                            tint = if (index < review.rating) Color(0xFFFFB400) else Color.LightGray,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = review.description,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.DarkGray,
+                    maxLines = 2
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun PicassoImage(url: String, modifier: Modifier = Modifier) {
+    AndroidView(
+        factory = { context ->
+            ImageView(context).apply {
+                scaleType = ImageView.ScaleType.CENTER_CROP
+            }
+        },
+        modifier = modifier,
+        update = { imageView ->
+            if (url.isNotEmpty()) {
+                Picasso.get()
+                    .load(url)
+                    .placeholder(android.R.drawable.ic_menu_gallery)
+                    .error(android.R.drawable.ic_menu_report_image)
+                    .into(imageView)
+            }
+        }
+    )
+}
+
+@Composable
+fun EmptyReviewsContent(onAddReviewClick: () -> Unit) {
     Column(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxSize()
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Box(
-            modifier = Modifier
-                .size(140.dp)
-                .clip(CircleShape)
-                .background(PrimaryBlue.copy(alpha = 0.1f)),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = Icons.Outlined.StarBorder,
-                contentDescription = null,
-                modifier = Modifier.size(60.dp),
-                tint = PrimaryBlue
-            )
-        }
-
-        Spacer(modifier = Modifier.height(32.dp))
-
+        Icon(
+            imageVector = Icons.Outlined.StarBorder,
+            contentDescription = null,
+            modifier = Modifier.size(100.dp),
+            tint = PrimaryBlue.copy(alpha = 0.3f)
+        )
+        Spacer(modifier = Modifier.height(16.dp))
         Text(
             text = "No Reviews Yet",
-            style = MaterialTheme.typography.titleLarge.copy(
-                fontWeight = FontWeight.Bold
-            )
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold
         )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
+        Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = "Start your journey by sharing your first hotel experience. Your reviews help others make better travel decisions!",
+            text = "Share your experience with us!",
             textAlign = TextAlign.Center,
-            style = MaterialTheme.typography.bodyLarge,
-            color = Color.Gray,
-            modifier = Modifier.padding(horizontal = 16.dp)
+            color = Color.Gray
         )
-
-        Spacer(modifier = Modifier.height(40.dp))
-
-        Button(
-            onClick = { /* Add Review */ },
-            modifier = Modifier
-                .fillMaxWidth(0.8f)
-                .height(56.dp),
-            shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue)
-        ) {
-            Icon(
-                imageVector = Icons.Default.AddCircleOutline,
-                contentDescription = null
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = "Add Your First Review",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
-            )
+        Spacer(modifier = Modifier.height(24.dp))
+        Button(onClick = onAddReviewClick) {
+            Text("Add Review")
         }
-    }
-}
-
-@Composable
-fun BottomNavigationBar() {
-    NavigationBar(
-        containerColor = Color.White,
-        tonalElevation = 8.dp
-    ) {
-        NavigationBarItem(
-            icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
-            label = { Text("Home") },
-            selected = true,
-            onClick = { },
-            colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = PrimaryBlue,
-                selectedTextColor = PrimaryBlue,
-                indicatorColor = PrimaryBlue.copy(alpha = 0.1f)
-            )
-        )
-        NavigationBarItem(
-            icon = { Icon(Icons.Default.Language, contentDescription = "Feed") },
-            label = { Text("Feed") },
-            selected = false,
-            onClick = { }
-        )
-        NavigationBarItem(
-            icon = { Icon(Icons.Default.AddCircleOutline, contentDescription = "Add") },
-            label = { Text("Add") },
-            selected = false,
-            onClick = { }
-        )
-        NavigationBarItem(
-            icon = { Icon(Icons.Default.PersonOutline, contentDescription = "Profile") },
-            label = { Text("Profile") },
-            selected = false,
-            onClick = { }
-        )
     }
 }
 
@@ -204,6 +230,13 @@ fun BottomNavigationBar() {
 @Composable
 fun MyReviewsPreview() {
     HotelReviewsTheme {
-        MyReviewsScreen()
+        MyReviewsScreen(
+            reviews = listOf(
+                Review(hotelName = "Grand Hotel", rating = 4, description = "Excellent stay")
+            ),
+            isLoading = false,
+            onAddReviewClick = {},
+            onLogoutClick = {}
+        )
     }
 }

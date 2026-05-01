@@ -1,12 +1,18 @@
 package com.example.hotelreviews.model
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 import com.google.firebase.firestore.DocumentId
 
+@Entity(tableName = "reviews")
 data class Review(
-    @DocumentId val id: String = "",
-    val userId: String = "",
-    val hotelName: String = "",
-    val rating: Int = 0,
-    val description: String = "",
-    val timestamp: Long = System.currentTimeMillis()
+    @PrimaryKey
+    @DocumentId 
+    var id: String = "",
+    var userId: String = "",
+    var hotelName: String = "",
+    var rating: Int = 0,
+    var description: String = "",
+    var imageUrl: String = "",
+    var timestamp: Long = System.currentTimeMillis()
 )

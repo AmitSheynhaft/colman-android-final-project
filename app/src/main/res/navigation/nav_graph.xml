@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/loginFragment">
+
+    <fragment
+        android:id="@+id/myReviewsFragment"
+        android:name="com.example.hotelreviews.ui.fragments.MyReviewsFragment"
+        android:label="My Reviews"
+        tools:layout="@layout/fragment_compose_host">
+        <action
+            android:id="@+id/action_myReviewsFragment_to_addReviewFragment"
+            app:destination="@id/addReviewFragment" />
+        <action
+            android:id="@+id/action_myReviewsFragment_to_loginFragment"
+            app:destination="@id/loginFragment"
+            app:popUpTo="@id/nav_graph"
+            app:popUpToInclusive="true" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/addReviewFragment"
+        android:name="com.example.hotelreviews.ui.fragments.AddReviewFragment"
+        android:label="Add Review"
+        tools:layout="@layout/fragment_compose_host" />
+
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="com.example.hotelreviews.ui.fragments.LoginFragment"
+        android:label="Login"
+        tools:layout="@layout/fragment_compose_host">
+        <action
+            android:id="@+id/action_loginFragment_to_registerFragment"
+            app:destination="@id/registerFragment" />
+        <action
+            android:id="@+id/action_loginFragment_to_myReviewsFragment"
+            app:destination="@id/myReviewsFragment"
+            app:popUpTo="@id/nav_graph"
+            app:popUpToInclusive="true" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/registerFragment"
+        android:name="com.example.hotelreviews.ui.fragments.RegisterFragment"
+        android:label="Register"
+        tools:layout="@layout/fragment_compose_host">
+        <action
+            android:id="@+id/action_registerFragment_to_myReviewsFragment"
+            app:destination="@id/myReviewsFragment"
+            app:popUpTo="@id/nav_graph"
+            app:popUpToInclusive="true" />
+    </fragment>
+
+</navigation>
