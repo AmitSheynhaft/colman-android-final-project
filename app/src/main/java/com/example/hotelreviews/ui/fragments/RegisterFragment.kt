@@ -36,8 +36,8 @@ class RegisterFragment : Fragment() {
                 RegisterScreen(
                     isLoading = isLoading,
                     errorMessage = errorMessage,
-                    onRegisterClick = { email, password ->
-                        authViewModel.register(email, password) {
+                    onRegisterClick = { email, password, imageUri ->
+                        authViewModel.register(email, password, imageUri) {
                             findNavController().navigate(R.id.action_registerFragment_to_myReviewsFragment)
                         }
                     },

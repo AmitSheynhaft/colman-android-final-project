@@ -1,10 +1,12 @@
 package com.example.hotelreviews.viewmodel
 
+import android.net.Uri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.UserProfileChangeRequest
 
 class AuthViewModel : ViewModel() {
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
@@ -40,7 +42,7 @@ class AuthViewModel : ViewModel() {
             }
     }
 
-    fun register(email: String, pass: String, onSuccess: () -> Unit) {
+    fun register(email: String, pass: String, imageUri: Uri?, onSuccess: () -> Unit) {
         if (email.isBlank() || pass.isBlank()) {
             _errorMessage.value = "Please fill in all fields"
             return
@@ -48,11 +50,27 @@ class AuthViewModel : ViewModel() {
         _isLoading.value = true
         auth.createUserWithEmailAndPassword(email, pass)
             .addOnCompleteListener { task ->
-                _isLoading.value = false
                 if (task.isSuccessful) {
-                    _user.value = auth.currentUser
-                    onSuccess()
+                    val user = auth.currentUser
+                    if (imageUri != null && user != null) {
+                        // In a production app, you would upload the image to Firebase Storage here
+                        // For now, we'll just update the profile with the local URI or placeholder
+                        val profileUpdates = UserProfileChangeRequest.Builder()
+                            .setPhotoUri(imageUri)
+                            .build()
+                        
+                        user.updateProfile(profileUpdates).addOnCompleteListener {
+                            _isLoading.value = false
+                            _user.value = auth.currentUser
+                            onSuccess()
+                        }
+                    } else {
+                        _isLoading.value = false
+                        _user.value = auth.currentUser
+                        onSuccess()
+                    }
                 } else {
+                    _isLoading.value = false
                     _errorMessage.value = task.exception?.message ?: "Registration failed"
                 }
             }
