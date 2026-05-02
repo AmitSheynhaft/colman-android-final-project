@@ -149,6 +149,14 @@ fun ReviewItem(review: Review) {
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
+                if (review.city.isNotEmpty()) {
+                    Text(
+                        text = review.city,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.Gray,
+                        modifier = Modifier.padding(bottom = 2.dp)
+                    )
+                }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     repeat(5) { index ->
                         Icon(
@@ -157,6 +165,32 @@ fun ReviewItem(review: Review) {
                             tint = if (index < review.rating) Color(0xFFFFB400) else Color.LightGray,
                             modifier = Modifier.size(16.dp)
                         )
+                    }
+                    if (review.placeId.isNotEmpty()) {
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Surface(
+                            color = Color(0xFFE8EFFF),
+                            shape = RoundedCornerShape(4.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    Icons.Default.Place,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(10.dp),
+                                    tint = PrimaryBlue
+                                )
+                                Spacer(modifier = Modifier.width(2.dp))
+                                Text(
+                                    text = "${review.apiRating} (${review.apiReviewCount})",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = PrimaryBlue,
+                                    fontSize = 10.sp
+                                )
+                            }
+                        }
                     }
                 }
                 Spacer(modifier = Modifier.height(4.dp))
@@ -232,7 +266,7 @@ fun MyReviewsPreview() {
     HotelReviewsTheme {
         MyReviewsScreen(
             reviews = listOf(
-                Review(hotelName = "Grand Hotel", rating = 4, description = "Excellent stay")
+                Review(hotelName = "Grand Hotel", rating = 4.0, description = "Excellent stay")
             ),
             isLoading = false,
             onAddReviewClick = {},

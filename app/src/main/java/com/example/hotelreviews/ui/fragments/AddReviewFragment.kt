@@ -35,12 +35,16 @@ class AddReviewFragment : Fragment() {
                 AddReviewScreen(
                     isLoading = isLoading,
                     onBackClick = { findNavController().navigateUp() },
-                    onSaveClick = { name, rating, desc, url ->
+                    onSaveClick = { name, city, rating, desc, url, placeId, apiRating, apiReviewCount ->
                         val review = Review(
                             hotelName = name,
-                            rating = rating,
+                            city = city,
+                            rating = rating.toDouble(),
                             description = desc,
-                            imageUrl = url
+                            imageUrl = url,
+                            placeId = placeId,
+                            apiRating = apiRating,
+                            apiReviewCount = apiReviewCount
                         )
                         viewModel.addReview(review) {
                             findNavController().navigateUp()
