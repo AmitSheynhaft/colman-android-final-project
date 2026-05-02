@@ -31,21 +31,38 @@ class MyReviewsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        adapter = ReviewAdapter { review ->
-            // Handle review click if needed (e.g., edit)
-        }
+        adapter = ReviewAdapter(
+            isMyReviews = true,
+            onReviewClick = { review ->
+                // Navigate to details if needed
+            },
+            onEditClick = { review ->
+                // Handle edit
+            },
+            onDeleteClick = { review ->
+                // Handle delete
+            }
+        )
         binding.reviewsRecyclerView.adapter = adapter
 
         viewModel.userReviews.observe(viewLifecycleOwner) { reviews ->
             adapter.submitList(reviews)
-            binding.emptyView.visibility = if (reviews.isEmpty()) View.VISIBLE else View.GONE
+            val isEmpty = reviews.isEmpty()
+            binding.layoutEmpty.visibility = if (isEmpty) View.VISIBLE else View.GONE
+            binding.reviewsRecyclerView.visibility = if (isEmpty) View.GONE else View.VISIBLE
+            binding.tvReviewCount.text = "${reviews.size} reviews"
         }
 
         viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
             binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
         }
 
-        binding.btnAddReview.setOnClickListener {
+        binding.btnLogout.setOnClickListener {
+            // authViewModel.logout() if available, or navigate to login
+            findNavController().navigate(R.id.action_myReviewsFragment_to_loginFragment)
+        }
+
+        binding.btnAddFirst.setOnClickListener {
             findNavController().navigate(R.id.action_myReviewsFragment_to_addReviewFragment)
         }
 

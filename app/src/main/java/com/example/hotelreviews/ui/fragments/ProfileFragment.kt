@@ -34,7 +34,6 @@ class ProfileFragment : Fragment() {
             user?.let {
                 binding.editUsername.setText(it.username)
                 binding.editFullname.setText(it.fullName)
-                binding.editEmail.setText(it.email)
                 binding.displayUsername.text = "@${it.username}"
                 binding.displayName.text = it.fullName
 
