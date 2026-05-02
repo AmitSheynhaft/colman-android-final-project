@@ -4,20 +4,17 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.example.hotelreviews.R
-import com.example.hotelreviews.databinding.FragmentComposeHostBinding
-import com.example.hotelreviews.ui.screens.RegisterScreen
-import com.example.hotelreviews.ui.theme.HotelReviewsTheme
+import com.example.hotelreviews.databinding.FragmentRegisterBinding
 import com.example.hotelreviews.viewmodel.AuthViewModel
 
 class RegisterFragment : Fragment() {
 
-    private var _binding: FragmentComposeHostBinding? = null
+    private var _binding: FragmentRegisterBinding? = null
     private val binding get() = _binding!!
     private val authViewModel: AuthViewModel by viewModels()
 
@@ -26,32 +23,41 @@ class RegisterFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentComposeHostBinding.inflate(inflater, container, false)
-        
-        binding.composeView.setContent {
-            HotelReviewsTheme {
-                val isLoading by authViewModel.isLoading.observeAsState(initial = false)
-                val errorMessage by authViewModel.errorMessage.observeAsState()
+        _binding = FragmentRegisterBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
-                RegisterScreen(
-                    isLoading = isLoading,
-                    errorMessage = errorMessage,
-                    onRegisterClick = { email, password ->
-                        authViewModel.register(email, password) {
-                            findNavController().navigate(R.id.action_registerFragment_to_myReviewsFragment)
-                        }
-                    },
-                    onLoginClick = {
-                        findNavController().navigateUp()
-                    },
-                    onDismissError = {
-                        authViewModel.clearError()
-                    }
-                )
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        authViewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
+            binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+            binding.btnRegister.isEnabled = !isLoading
+        }
+
+        authViewModel.errorMessage.observe(viewLifecycleOwner) { error ->
+            error?.let {
+                Toast.makeText(context, it, Toast.LENGTH_LONG).show()
+                authViewModel.clearError()
             }
         }
-        
-        return binding.root
+
+        binding.btnRegister.setOnClickListener {
+            val email = binding.editEmail.text.toString()
+            val password = binding.editPassword.text.toString()
+
+            if (email.isNotEmpty() && password.isNotEmpty()) {
+                authViewModel.register(email, password) {
+                    findNavController().navigate(R.id.action_registerFragment_to_myReviewsFragment)
+                }
+            } else {
+                Toast.makeText(context, "Please fill in all fields", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        binding.btnToLogin.setOnClickListener {
+            findNavController().navigateUp()
+        }
     }
 
     override fun onDestroyView() {

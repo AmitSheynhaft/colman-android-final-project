@@ -6,17 +6,15 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.navigation.fragment.findNavController
-import com.example.hotelreviews.R
-import com.example.hotelreviews.databinding.FragmentMyReviewsBinding
+import com.example.hotelreviews.databinding.FragmentGlobalFeedBinding
 import com.example.hotelreviews.ui.adapters.ReviewAdapter
-import com.example.hotelreviews.viewmodel.ReviewViewModel
+import com.example.hotelreviews.viewmodel.ReviewsViewModel
 
-class MyReviewsFragment : Fragment() {
+class GlobalFeedFragment : Fragment() {
 
-    private var _binding: FragmentMyReviewsBinding? = null
+    private var _binding: FragmentGlobalFeedBinding? = null
     private val binding get() = _binding!!
-    private val viewModel: ReviewViewModel by viewModels()
+    private val viewModel: ReviewsViewModel by viewModels()
     private lateinit var adapter: ReviewAdapter
 
     override fun onCreateView(
@@ -24,7 +22,7 @@ class MyReviewsFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentMyReviewsBinding.inflate(inflater, container, false)
+        _binding = FragmentGlobalFeedBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -32,21 +30,16 @@ class MyReviewsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         adapter = ReviewAdapter { review ->
-            // Handle review click if needed (e.g., edit)
+            // Handle review click if needed
         }
-        binding.reviewsRecyclerView.adapter = adapter
+        binding.feedRecyclerView.adapter = adapter
 
-        viewModel.userReviews.observe(viewLifecycleOwner) { reviews ->
+        viewModel.reviews.observe(viewLifecycleOwner) { reviews ->
             adapter.submitList(reviews)
-            binding.emptyView.visibility = if (reviews.isEmpty()) View.VISIBLE else View.GONE
         }
 
         viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
             binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
-        }
-
-        binding.btnAddReview.setOnClickListener {
-            findNavController().navigate(R.id.action_myReviewsFragment_to_addReviewFragment)
         }
 
         viewModel.refreshReviews()

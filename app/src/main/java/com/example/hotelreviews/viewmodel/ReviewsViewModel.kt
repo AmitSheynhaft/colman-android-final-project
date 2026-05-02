@@ -1,14 +1,20 @@
 package com.example.hotelreviews.viewmodel
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.map
+import com.example.hotelreviews.model.Model
 import com.example.hotelreviews.model.Review
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 
 class ReviewsViewModel : ViewModel() {
-    private val _reviews = MutableStateFlow<List<Review>>(emptyList())
-    val reviews: StateFlow<List<Review>> = _reviews.asStateFlow()
+    val reviews: LiveData<List<Review>> = Model.instance.getAllReviews()
+    val loadingState: LiveData<Model.LoadingState> = Model.instance.reviewsLoadingState
 
-    // We'll add Firebase integration here later
+    val isLoading: LiveData<Boolean> = loadingState.map {
+        it == Model.LoadingState.LOADING
+    }
+
+    fun refreshReviews() {
+        Model.instance.refreshAllReviews()
+    }
 }

@@ -9,7 +9,7 @@
         android:id="@+id/myReviewsFragment"
         android:name="com.example.hotelreviews.ui.fragments.MyReviewsFragment"
         android:label="My Reviews"
-        tools:layout="@layout/fragment_compose_host">
+        tools:layout="@layout/fragment_my_reviews">
         <action
             android:id="@+id/action_myReviewsFragment_to_addReviewFragment"
             app:destination="@id/addReviewFragment" />
@@ -21,16 +21,22 @@
     </fragment>
 
     <fragment
+        android:id="@+id/globalFeedFragment"
+        android:name="com.example.hotelreviews.ui.fragments.GlobalFeedFragment"
+        android:label="Global Feed"
+        tools:layout="@layout/fragment_global_feed" />
+
+    <fragment
         android:id="@+id/addReviewFragment"
         android:name="com.example.hotelreviews.ui.fragments.AddReviewFragment"
         android:label="Add Review"
-        tools:layout="@layout/fragment_compose_host" />
+        tools:layout="@layout/fragment_add_review" />
 
     <fragment
         android:id="@+id/loginFragment"
         android:name="com.example.hotelreviews.ui.fragments.LoginFragment"
         android:label="Login"
-        tools:layout="@layout/fragment_compose_host">
+        tools:layout="@layout/fragment_login">
         <action
             android:id="@+id/action_loginFragment_to_registerFragment"
             app:destination="@id/registerFragment" />
@@ -45,10 +51,22 @@
         android:id="@+id/registerFragment"
         android:name="com.example.hotelreviews.ui.fragments.RegisterFragment"
         android:label="Register"
-        tools:layout="@layout/fragment_compose_host">
+        tools:layout="@layout/fragment_register">
         <action
             android:id="@+id/action_registerFragment_to_myReviewsFragment"
             app:destination="@id/myReviewsFragment"
+            app:popUpTo="@id/nav_graph"
+            app:popUpToInclusive="true" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/profileFragment"
+        android:name="com.example.hotelreviews.ui.fragments.ProfileFragment"
+        android:label="Profile"
+        tools:layout="@layout/fragment_profile">
+        <action
+            android:id="@+id/action_profileFragment_to_loginFragment"
+            app:destination="@id/loginFragment"
             app:popUpTo="@id/nav_graph"
             app:popUpToInclusive="true" />
     </fragment>

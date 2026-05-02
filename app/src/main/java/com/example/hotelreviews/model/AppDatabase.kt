@@ -1,28 +1,25 @@
 package com.example.hotelreviews.model
 
-import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import com.example.hotelreviews.base.MyApplication
 
-@Database(entities = [Review::class], version = 1, exportSchema = false)
-abstract class AppDatabase : RoomDatabase() {
+@Database(entities = [Review::class, User::class], version = 3)
+abstract class AppLocalDbRepository : RoomDatabase() {
     abstract fun reviewDao(): ReviewDao
+    abstract fun userDao(): UserDao
+}
 
-    companion object {
-        @Volatile
-        private var INSTANCE: AppDatabase? = null
-
-        fun getDatabase(context: Context): AppDatabase {
-            return INSTANCE ?: synchronized(this) {
-                val instance = Room.databaseBuilder(
-                    context.applicationContext,
-                    AppDatabase::class.java,
-                    "hotel_reviews_db"
-                ).build()
-                INSTANCE = instance
-                instance
-            }
-        }
+object AppLocalDb {
+    val db: AppLocalDbRepository by lazy {
+        val context = MyApplication.Globals.appContext
+            ?: throw IllegalStateException("Context not available")
+        Room.databaseBuilder(
+            context,
+            AppLocalDbRepository::class.java,
+            "hotel_reviews_db.db"
+        ).fallbackToDestructiveMigration()
+            .build()
     }
 }
