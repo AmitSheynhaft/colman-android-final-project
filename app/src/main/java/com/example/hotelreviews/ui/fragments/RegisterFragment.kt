@@ -45,13 +45,8 @@ class RegisterFragment : Fragment() {
         binding.btnRegister.setOnClickListener {
             val email = binding.editEmail.text.toString()
             val password = binding.editPassword.text.toString()
-
-            if (email.isNotEmpty() && password.isNotEmpty()) {
-                authViewModel.register(email, password) {
-                    findNavController().navigate(R.id.action_registerFragment_to_myReviewsFragment)
-                }
-            } else {
-                Toast.makeText(context, "Please fill in all fields", Toast.LENGTH_SHORT).show()
+            authViewModel.register(email, password) {
+                findNavController().navigate(R.id.action_registerFragment_to_myReviewsFragment)
             }
         }
 

@@ -14,6 +14,10 @@ class AuthViewModel : ViewModel() {
     val errorMessage: LiveData<String?> = _errorMessage
 
     fun login(email: String, pass: String, onSuccess: () -> Unit) {
+        if (email.isBlank() || pass.isBlank()) {
+            _errorMessage.value = "Please fill in all fields"
+            return
+        }
         _isLoading.value = true
         Model.instance.login(email, pass) { success, error ->
             _isLoading.postValue(false)
@@ -26,6 +30,10 @@ class AuthViewModel : ViewModel() {
     }
 
     fun register(email: String, pass: String, onSuccess: () -> Unit) {
+        if (email.isBlank() || pass.isBlank()) {
+            _errorMessage.value = "Please fill in all fields"
+            return
+        }
         _isLoading.value = true
         Model.instance.register(email, pass) { success, error ->
             _isLoading.postValue(false)
