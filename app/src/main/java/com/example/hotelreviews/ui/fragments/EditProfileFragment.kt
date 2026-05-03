@@ -74,7 +74,7 @@ class EditProfileFragment : Fragment() {
             galleryLauncher.launch("image/*")
         }
 
-        userViewModel.getCurrentUser()?.observe(viewLifecycleOwner) { user ->
+        userViewModel.user.observe(viewLifecycleOwner) { user ->
             if (user != null) {
                 nameEditText.setText(user.name)
                 if (user.profileImageUrl.isNotEmpty()) {
@@ -83,7 +83,7 @@ class EditProfileFragment : Fragment() {
             }
         }
 
-        userViewModel.refreshCurrentUser()
+        userViewModel.fetchUser()
 
         saveButton.setOnClickListener {
             val name = nameEditText.text.toString()
