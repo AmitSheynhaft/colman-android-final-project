@@ -29,7 +29,7 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:layout_gravity="center"
-                android:src="@android:drawable/ic_menu_today"
+                android:src="@drawable/ic_house"
                 app:tint="@color/white" />
         </androidx.cardview.widget.CardView>
 
@@ -120,19 +120,19 @@
 
         <androidx.cardview.widget.CardView
             android:id="@+id/empty_star_container"
-            android:layout_width="150dp"
-            android:layout_height="150dp"
-            android:layout_marginTop="60dp"
+            android:layout_width="140dp"
+            android:layout_height="140dp"
+            android:layout_marginTop="80dp"
             app:cardBackgroundColor="@color/purple_light"
-            app:cardCornerRadius="75dp"
+            app:cardCornerRadius="70dp"
             app:cardElevation="0dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
             <ImageView
-                android:layout_width="80dp"
-                android:layout_height="80dp"
+                android:layout_width="70dp"
+                android:layout_height="70dp"
                 android:layout_gravity="center"
                 android:src="@android:drawable/btn_star_big_off"
                 app:tint="@color/purple_primary" />
@@ -142,7 +142,7 @@
             android:id="@+id/empty_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="32dp"
             android:text="@string/no_reviews_yet"
             android:textColor="@color/black"
             android:textSize="18sp"
@@ -156,30 +156,30 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="40dp"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="16dp"
             android:layout_marginEnd="40dp"
             android:gravity="center"
             android:text="@string/no_reviews_subtitle"
             android:textColor="@color/gray_text"
             android:textSize="14sp"
+            android:lineSpacingExtra="4dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/empty_title" />
 
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/add_first_review_button"
             android:layout_width="wrap_content"
-            android:layout_height="60dp"
-            android:layout_marginTop="32dp"
+            android:layout_height="56dp"
+            android:layout_marginTop="40dp"
             android:backgroundTint="@color/purple_primary"
-            android:drawableStart="@android:drawable/ic_input_add"
-            android:drawablePadding="8dp"
-            android:drawableTint="@color/white"
-            android:paddingStart="24dp"
-            android:paddingEnd="24dp"
             android:text="@string/add_your_first_review"
             android:textAllCaps="false"
+            android:textSize="16sp"
             app:cornerRadius="16dp"
+            app:icon="@android:drawable/ic_input_add"
+            app:iconGravity="textStart"
+            app:iconPadding="8dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/empty_subtitle" />

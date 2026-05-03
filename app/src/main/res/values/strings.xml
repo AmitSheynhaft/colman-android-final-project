@@ -16,6 +16,9 @@
     <string name="my_reviews">My Reviews</string>
     <string name="logout">Logout</string>
     <string name="edit_profile">Edit Profile</string>
+    <string name="global_feed">Global Feed</string>
+    <string name="discover_new_places">Discover new places</string>
+    <string name="reviews_shared_count">%1$d reviews shared</string>
 
     <!-- New Strings -->
     <string name="welcome_back">Welcome Back</string>
