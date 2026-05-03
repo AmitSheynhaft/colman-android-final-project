@@ -76,9 +76,17 @@ class EditProfileFragment : Fragment() {
 
         userViewModel.user.observe(viewLifecycleOwner) { user ->
             if (user != null) {
-                nameEditText.setText(user.name)
-                if (user.profileImageUrl.isNotEmpty()) {
-                    Picasso.get().load(user.profileImageUrl).placeholder(android.R.drawable.ic_menu_gallery).into(profileImageView)
+                // Only update the name if the user hasn't started typing yet
+                if (nameEditText.text.isEmpty() || nameEditText.text.toString() == user.name) {
+                    nameEditText.setText(user.name)
+                }
+                
+                // Only load the image if the user hasn't selected a new one
+                if (selectedImageBitmap == null && user.profileImageUrl.isNotEmpty()) {
+                    Picasso.get()
+                        .load(user.profileImageUrl)
+                        .placeholder(android.R.drawable.ic_menu_gallery)
+                        .into(profileImageView)
                 }
             }
         }
