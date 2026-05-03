@@ -10,6 +10,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.ProgressBar
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -108,19 +109,28 @@ class EditProfileFragment : Fragment() {
         userViewModel.user.observe(viewLifecycleOwner) { user ->
             if (user != null) {
                 initialName = user.name
+                
+                // Update display views
+                view.findViewById<TextView>(R.id.display_name_large).text = user.name
+
                 // Only update the name if the user hasn't started typing yet
                 if (nameEditText.text.isEmpty() || nameEditText.text.toString() == user.name) {
                     nameEditText.setText(user.name)
                 }
                 
                 // Only load the image if the user hasn't selected a new one
-                if (selectedImageBitmap == null && user.profileImageUrl.isNotEmpty()) {
-                    Picasso.get()
-                        .load(user.profileImageUrl)
-                        .fit()
-                        .centerCrop()
-                        .placeholder(android.R.drawable.ic_menu_gallery)
-                        .into(profileImageView)
+                if (selectedImageBitmap == null) {
+                    if (user.profileImageUrl.isNotEmpty()) {
+                        Picasso.get()
+                            .load(user.profileImageUrl)
+                            .fit()
+                            .centerCrop()
+                            .placeholder(R.drawable.ic_person)
+                            .error(R.drawable.ic_person)
+                            .into(profileImageView)
+                    } else {
+                        profileImageView.setImageResource(R.drawable.ic_person)
+                    }
                 }
                 checkIfChanged()
             }

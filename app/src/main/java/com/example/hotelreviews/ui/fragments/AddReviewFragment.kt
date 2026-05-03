@@ -164,7 +164,7 @@ class AddReviewFragment : Fragment() {
                     selectedImageBitmap != null ||
                     isImageDeleted
 
-            saveButton.isEnabled = hasChanged && name.isNotEmpty() && city.isNotEmpty()
+            saveButton.isEnabled = hasChanged && name.isNotEmpty() && city.isNotEmpty() && desc.isNotEmpty()
             saveButton.alpha = if (saveButton.isEnabled) 1.0f else 0.5f
         }
 
@@ -279,19 +279,15 @@ class AddReviewFragment : Fragment() {
                 Toast.makeText(requireContext(), getString(R.string.error_fill_all_fields), Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
+            if (desc.isEmpty()) {
+                Toast.makeText(requireContext(), "Description cannot be empty or just spaces", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
 
-            // Ensure user identity is captured
-            val finalUserName = if (currentUserName.isEmpty()) {
-                userViewModel.user.value?.name ?: ""
-            } else {
-                currentUserName
-            }
-            
-            val finalProfileImage = if (currentUserProfileImageUrl.isEmpty()) {
-                userViewModel.user.value?.profileImageUrl ?: ""
-            } else {
-                currentUserProfileImageUrl
-            }
+            // Ensure user identity is captured from the latest ViewModel state
+            val user = userViewModel.user.value
+            val finalUserName = user?.name ?: currentUserName
+            val finalProfileImage = user?.profileImageUrl ?: currentUserProfileImageUrl
 
             val review = Review(
                 id = existingReviewId ?: "",

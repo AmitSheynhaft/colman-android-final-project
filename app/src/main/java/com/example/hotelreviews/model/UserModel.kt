@@ -49,6 +49,10 @@ object UserModel {
         usersCollection.document(user.id).set(user).addOnSuccessListener {
             MyApplication.Globals.executorService.execute {
                 userDao.insert(user)
+                // Force immediate sync of shared prefs for this user
+                MyApplication.Globals.appContext?.getSharedPreferences("TAG", android.content.Context.MODE_PRIVATE)
+                    ?.edit()?.putLong(LAST_UPDATED + user.id, user.lastUpdated)?.apply()
+
                 MyApplication.Globals.mainHandler.post {
                     onComplete()
                 }
