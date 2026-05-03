@@ -32,6 +32,17 @@
     <string name="create_account">Create Account</string>
     <string name="full_name">Full Name</string>
     <string name="add_hotel_review">Add Hotel Review</string>
+    <string name="share_your_experience">Share your experience</string>
+    <string name="search_hotel_optional">Search Hotel (Optional)</string>
+    <string name="mock_api_note">Note: Mock API. Replace with your key.</string>
+    <string name="hotel_name_label">Hotel Name *</string>
+    <string name="city_label">City *</string>
+    <string name="hotel_image_label">Hotel Image *</string>
+    <string name="rating_label">Rating *</string>
+    <string name="description_label">Description *</string>
+    <string name="x_out_of_5_stars">%1$s out of 5 stars</string>
+    <string name="characters_count">%1$d characters</string>
+    <string name="submit_review">Submit Review</string>
     <string name="take_photo">Take Photo</string>
     <string name="from_gallery">From Gallery</string>
     <string name="describe_your_stay">Describe your stay...</string>

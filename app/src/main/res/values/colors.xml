@@ -11,7 +11,11 @@
     <color name="purple_light">#EEECFF</color>
     <color name="star_yellow">#FFC107</color>
     <color name="gray_text">#757575</color>
+    <color name="gray_light">#F5F5F5</color>
     <color name="white">#FFFFFFFF</color>
     <color name="black">#FF000000</color>
     <color name="background_light">#F8F9FE</color>
+    <color name="blue_banner_bg">#E3F2FD</color>
+    <color name="blue_banner_text">#1976D2</color>
+    <color name="divider_color">#EEEEEE</color>
 </resources>

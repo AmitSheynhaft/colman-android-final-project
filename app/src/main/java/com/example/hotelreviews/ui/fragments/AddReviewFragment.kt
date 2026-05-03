@@ -3,6 +3,8 @@ package com.example.hotelreviews.ui.fragments
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,6 +13,7 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.RatingBar
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -74,15 +77,19 @@ class AddReviewFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        setupPlacesAutocomplete()
-
+        val hotelNameEditText = view.findViewById<EditText>(R.id.hotel_name_edit_text)
+        val cityEditText = view.findViewById<EditText>(R.id.city_edit_text)
         val descriptionEditText = view.findViewById<EditText>(R.id.description_edit_text)
+        val ratingText = view.findViewById<TextView>(R.id.rating_text)
+        val characterCountText = view.findViewById<TextView>(R.id.character_count_text)
         val captureButton = view.findViewById<Button>(R.id.capture_button)
         val galleryButton = view.findViewById<Button>(R.id.gallery_button)
         val saveButton = view.findViewById<Button>(R.id.save_button)
         val progressBar = view.findViewById<ProgressBar>(R.id.save_progress_bar)
         val ratingBar = view.findViewById<RatingBar>(R.id.rating_bar)
         val logoutButton = view.findViewById<View>(R.id.logout_button)
+
+        setupPlacesAutocomplete(hotelNameEditText, cityEditText)
 
         logoutButton.setOnClickListener {
             authViewModel.logout()
@@ -93,24 +100,39 @@ class AddReviewFragment : Fragment() {
 
         ratingBar.setOnRatingBarChangeListener { _, rating, _ ->
             userRating = rating
+            ratingText.text = getString(R.string.x_out_of_5_stars, rating.toInt().toString())
         }
+
+        descriptionEditText.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                characterCountText.text = getString(R.string.characters_count, s?.length ?: 0)
+            }
+            override fun afterTextChanged(s: Editable?) {}
+        })
 
         captureButton.setOnClickListener { cameraLauncher.launch(null) }
         galleryButton.setOnClickListener { galleryLauncher.launch("image/*") }
 
         saveButton.setOnClickListener {
-            val desc = descriptionEditText.text.toString()
+            val name = hotelNameEditText.text.toString().trim()
+            val city = cityEditText.text.toString().trim()
+            val desc = descriptionEditText.text.toString().trim()
 
-            if (selectedHotelName.isEmpty()) {
-                Toast.makeText(requireContext(), getString(R.string.error_select_hotel), Toast.LENGTH_SHORT).show()
+            if (name.isEmpty()) {
+                Toast.makeText(requireContext(), getString(R.string.error_name_empty), Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            if (city.isEmpty()) {
+                Toast.makeText(requireContext(), getString(R.string.error_fill_all_fields), Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
             val review = Review(
-                hotelName = selectedHotelName,
-                address = selectedHotelAddress,
+                hotelName = name,
+                address = selectedHotelAddress.ifEmpty { city },
                 description = desc,
-                city = selectedHotelCity,
+                city = city,
                 rating = userRating.toDouble(),
                 placeId = selectedPlaceId,
                 apiRating = selectedApiRating,
@@ -128,7 +150,7 @@ class AddReviewFragment : Fragment() {
         }
     }
 
-    private fun setupPlacesAutocomplete() {
+    private fun setupPlacesAutocomplete(hotelNameEditText: EditText, cityEditText: EditText) {
         val autocompleteFragment = childFragmentManager.findFragmentById(R.id.autocomplete_fragment)
                 as AutocompleteSupportFragment
 
@@ -152,9 +174,12 @@ class AddReviewFragment : Fragment() {
                 selectedApiReviewCount = place.userRatingCount ?: 0
                 selectedHotelAddress = place.formattedAddress ?: ""
                 
+                hotelNameEditText.setText(selectedHotelName)
+                
                 place.addressComponents?.asList()?.forEach { component ->
                     if (component.types.contains("locality")) {
                         selectedHotelCity = component.name
+                        cityEditText.setText(selectedHotelCity)
                     }
                 }
             }
