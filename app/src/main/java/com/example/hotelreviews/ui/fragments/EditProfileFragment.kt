@@ -38,8 +38,31 @@ class EditProfileFragment : Fragment() {
         galleryLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
             uri?.let {
                 Picasso.get().load(it).into(profileImageView)
+                
+                // Optimized decoding: Decode to a reasonable size first to save time/memory
+                val options = BitmapFactory.Options().apply {
+                    inJustDecodeBounds = true
+                }
                 requireContext().contentResolver.openInputStream(it)?.use { stream ->
-                    selectedImageBitmap = BitmapFactory.decodeStream(stream)
+                    BitmapFactory.decodeStream(stream, null, options)
+                }
+                
+                // Target a max of 1024px for the initial bitmap to speed up processing
+                var inSampleSize = 1
+                val maxDim = 1024
+                if (options.outHeight > maxDim || options.outWidth > maxDim) {
+                    val halfHeight = options.outHeight / 2
+                    val halfWidth = options.outWidth / 2
+                    while (halfHeight / inSampleSize >= maxDim && halfWidth / inSampleSize >= maxDim) {
+                        inSampleSize *= 2
+                    }
+                }
+                
+                val finalOptions = BitmapFactory.Options().apply {
+                    this.inSampleSize = inSampleSize
+                }
+                requireContext().contentResolver.openInputStream(it)?.use { stream ->
+                    selectedImageBitmap = BitmapFactory.decodeStream(stream, null, finalOptions)
                 }
             }
         }
@@ -76,9 +99,19 @@ class EditProfileFragment : Fragment() {
 
         userViewModel.user.observe(viewLifecycleOwner) { user ->
             if (user != null) {
-                nameEditText.setText(user.name)
-                if (user.profileImageUrl.isNotEmpty()) {
-                    Picasso.get().load(user.profileImageUrl).placeholder(android.R.drawable.ic_menu_gallery).into(profileImageView)
+                // Only update the name if the user hasn't started typing yet
+                if (nameEditText.text.isEmpty() || nameEditText.text.toString() == user.name) {
+                    nameEditText.setText(user.name)
+                }
+                
+                // Only load the image if the user hasn't selected a new one
+                if (selectedImageBitmap == null && user.profileImageUrl.isNotEmpty()) {
+                    Picasso.get()
+                        .load(user.profileImageUrl)
+                        .fit()
+                        .centerCrop()
+                        .placeholder(android.R.drawable.ic_menu_gallery)
+                        .into(profileImageView)
                 }
             }
         }
@@ -94,7 +127,7 @@ class EditProfileFragment : Fragment() {
 
             userViewModel.updateProfile(name, selectedImageBitmap) {
                 Toast.makeText(requireContext(), getString(R.string.profile_updated), Toast.LENGTH_SHORT).show()
-                findNavController().popBackStack()
+                selectedImageBitmap = null // Clear selection to allow reloading from URL
             }
         }
 

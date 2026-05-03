@@ -69,6 +69,8 @@ class UserViewModel : ViewModel() {
     private fun saveUser(userId: String, name: String, imageUrl: String, onComplete: () -> Unit) {
         val user = User(userId, AuthModel.getCurrentUser()?.email ?: "", name, imageUrl, System.currentTimeMillis())
         UserModel.addUser(user) {
+            // Update local LiveData immediately for instant UI feedback
+            _user.postValue(user)
             _isLoading.value = false
             onComplete()
         }

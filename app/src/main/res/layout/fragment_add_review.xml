@@ -266,27 +266,16 @@
                     android:orientation="horizontal">
 
                     <com.google.android.material.button.MaterialButton
-                        android:id="@+id/capture_button"
-                        style="@style/Widget.MaterialComponents.Button.TextButton"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="@string/take_photo"
-                        android:textAllCaps="false"
-                        android:textColor="@color/purple_primary"
-                        app:icon="@android:drawable/ic_menu_camera"
-                        app:iconTint="@color/purple_primary" />
-
-                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/gallery_button"
                         style="@style/Widget.MaterialComponents.Button.TextButton"
-                        android:layout_width="0dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
                         android:text="@string/from_gallery"
                         android:textAllCaps="false"
                         android:textColor="@color/purple_primary"
                         app:icon="@android:drawable/ic_menu_gallery"
+                        app:iconGravity="textStart"
+                        app:iconPadding="8dp"
                         app:iconTint="@color/purple_primary" />
                 </LinearLayout>
             </LinearLayout>

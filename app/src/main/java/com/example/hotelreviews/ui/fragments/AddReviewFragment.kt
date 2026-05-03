@@ -51,20 +51,35 @@ class AddReviewFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        cameraLauncher = registerForActivityResult(ActivityResultContracts.TakePicturePreview()) { bitmap ->
-            if (bitmap != null) {
-                selectedImageBitmap = bitmap
-                val imageView = view?.findViewById<ImageView>(R.id.review_image_view)
-                imageView?.setImageBitmap(bitmap)
-            }
-        }
         galleryLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
             uri?.let {
                 val imageView = view?.findViewById<ImageView>(R.id.review_image_view)
                 Picasso.get().load(it).into(imageView)
                 
+                // Optimized decoding: Decode to a reasonable size first to save time/memory
+                val options = BitmapFactory.Options().apply {
+                    inJustDecodeBounds = true
+                }
                 requireContext().contentResolver.openInputStream(it)?.use { stream ->
-                    selectedImageBitmap = BitmapFactory.decodeStream(stream)
+                    BitmapFactory.decodeStream(stream, null, options)
+                }
+                
+                // Target a max of 1024px for the initial bitmap to speed up processing
+                var inSampleSize = 1
+                val maxDim = 1024
+                if (options.outHeight > maxDim || options.outWidth > maxDim) {
+                    val halfHeight = options.outHeight / 2
+                    val halfWidth = options.outWidth / 2
+                    while (halfHeight / inSampleSize >= maxDim && halfWidth / inSampleSize >= maxDim) {
+                        inSampleSize *= 2
+                    }
+                }
+                
+                val finalOptions = BitmapFactory.Options().apply {
+                    this.inSampleSize = inSampleSize
+                }
+                requireContext().contentResolver.openInputStream(it)?.use { stream ->
+                    selectedImageBitmap = BitmapFactory.decodeStream(stream, null, finalOptions)
                 }
             }
         }
@@ -86,7 +101,6 @@ class AddReviewFragment : Fragment() {
         val descriptionEditText = view.findViewById<EditText>(R.id.description_edit_text)
         val ratingText = view.findViewById<TextView>(R.id.rating_text)
         val characterCountText = view.findViewById<TextView>(R.id.character_count_text)
-        val captureButton = view.findViewById<Button>(R.id.capture_button)
         val galleryButton = view.findViewById<Button>(R.id.gallery_button)
         val saveButton = view.findViewById<Button>(R.id.save_button)
         val progressBar = view.findViewById<ProgressBar>(R.id.save_progress_bar)
@@ -131,7 +145,6 @@ class AddReviewFragment : Fragment() {
             override fun afterTextChanged(s: Editable?) {}
         })
 
-        captureButton.setOnClickListener { cameraLauncher.launch(null) }
         galleryButton.setOnClickListener { galleryLauncher.launch("image/*") }
 
         saveButton.setOnClickListener {
@@ -182,6 +195,7 @@ class AddReviewFragment : Fragment() {
         viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
             progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
             saveButton.isEnabled = !isLoading
+            saveButton.text = if (isLoading) "Submitting..." else getString(R.string.submit_review)
         }
     }
 

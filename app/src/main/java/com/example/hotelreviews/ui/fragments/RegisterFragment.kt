@@ -34,9 +34,29 @@ class RegisterFragment : Fragment() {
                 val profileImageView = view?.findViewById<ImageView>(R.id.profile_image_view)
                 Picasso.get().load(it).into(profileImageView)
                 
-                // Convert Uri to Bitmap
+                // Optimized decoding: Decode to a reasonable size first
+                val options = BitmapFactory.Options().apply {
+                    inJustDecodeBounds = true
+                }
                 requireContext().contentResolver.openInputStream(it)?.use { stream ->
-                    selectedImageBitmap = BitmapFactory.decodeStream(stream)
+                    BitmapFactory.decodeStream(stream, null, options)
+                }
+                
+                var inSampleSize = 1
+                val maxDim = 1024
+                if (options.outHeight > maxDim || options.outWidth > maxDim) {
+                    val halfHeight = options.outHeight / 2
+                    val halfWidth = options.outWidth / 2
+                    while (halfHeight / inSampleSize >= maxDim && halfWidth / inSampleSize >= maxDim) {
+                        inSampleSize *= 2
+                    }
+                }
+                
+                val finalOptions = BitmapFactory.Options().apply {
+                    this.inSampleSize = inSampleSize
+                }
+                requireContext().contentResolver.openInputStream(it)?.use { stream ->
+                    selectedImageBitmap = BitmapFactory.decodeStream(stream, null, finalOptions)
                 }
             }
         }

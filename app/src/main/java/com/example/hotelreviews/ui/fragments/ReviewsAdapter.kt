@@ -71,6 +71,9 @@ class ReviewsAdapter(private var reviews: List<Review>, private val showUserName
             holder.imageCard.visibility = View.VISIBLE
             Picasso.get()
                 .load(review.imageUrl)
+                .fit()
+                .centerCrop()
+                .stableKey(review.imageUrl)
                 .placeholder(android.R.drawable.ic_menu_gallery)
                 .error(android.R.drawable.ic_menu_report_image)
                 .into(holder.imageView)
