@@ -11,7 +11,13 @@ import com.example.hotelreviews.R
 import com.example.hotelreviews.model.Review
 import com.squareup.picasso.Picasso
 
-class ReviewsAdapter(private var reviews: List<Review>, private val showUserName: Boolean = true) : RecyclerView.Adapter<ReviewsAdapter.ReviewViewHolder>() {
+class ReviewsAdapter(
+    private var reviews: List<Review>,
+    private val showUserName: Boolean = true,
+    private val showActions: Boolean = false,
+    private val onEditClick: ((Review) -> Unit)? = null,
+    private val onDeleteClick: ((Review) -> Unit)? = null
+) : RecyclerView.Adapter<ReviewsAdapter.ReviewViewHolder>() {
 
     class ReviewViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val imageView: ImageView = view.findViewById(R.id.review_image)
@@ -25,6 +31,9 @@ class ReviewsAdapter(private var reviews: List<Review>, private val showUserName
         val descriptionText: TextView = view.findViewById(R.id.review_description_text)
         val apiRatingBadge: View = view.findViewById(R.id.api_rating_badge)
         val apiRatingText: TextView = view.findViewById(R.id.api_rating_text)
+        val actionsLayout: View = view.findViewById(R.id.actions_layout)
+        val editButton: View = view.findViewById(R.id.edit_button)
+        val deleteButton: View = view.findViewById(R.id.delete_button)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ReviewViewHolder {
@@ -58,6 +67,14 @@ class ReviewsAdapter(private var reviews: List<Review>, private val showUserName
         } else {
             holder.userNameText.visibility = View.GONE
             holder.userProfileCard.visibility = View.GONE
+        }
+        
+        if (showActions) {
+            holder.actionsLayout.visibility = View.VISIBLE
+            holder.editButton.setOnClickListener { onEditClick?.invoke(review) }
+            holder.deleteButton.setOnClickListener { onDeleteClick?.invoke(review) }
+        } else {
+            holder.actionsLayout.visibility = View.GONE
         }
         
         if (review.apiRating > 0) {

@@ -268,8 +268,9 @@
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/gallery_button"
                         style="@style/Widget.MaterialComponents.Button.TextButton"
-                        android:layout_width="match_parent"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_weight="1"
                         android:text="@string/from_gallery"
                         android:textAllCaps="false"
                         android:textColor="@color/purple_primary"
@@ -277,6 +278,21 @@
                         app:iconGravity="textStart"
                         app:iconPadding="8dp"
                         app:iconTint="@color/purple_primary" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/delete_photo_button"
+                        style="@style/Widget.MaterialComponents.Button.TextButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Delete"
+                        android:textAllCaps="false"
+                        android:textColor="#E57373"
+                        android:visibility="gone"
+                        app:icon="@android:drawable/ic_menu_delete"
+                        app:iconGravity="textStart"
+                        app:iconPadding="8dp"
+                        app:iconTint="#E57373" />
                 </LinearLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>

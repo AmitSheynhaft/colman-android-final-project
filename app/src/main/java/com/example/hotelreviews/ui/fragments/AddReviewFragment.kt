@@ -19,6 +19,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.example.hotelreviews.R
 import com.example.hotelreviews.model.Review
@@ -48,9 +49,20 @@ class AddReviewFragment : Fragment() {
     private var userRating: Float = 3.0f
     private var currentUserName: String = ""
     private var currentUserProfileImageUrl: String = ""
+    private var existingReviewId: String? = null
+    private var existingImageUrl: String = ""
+    private var isImageDeleted: Boolean = false
+    
+    // Initial values for change tracking
+    private var initialHotelName = ""
+    private var initialCity = ""
+    private var initialDescription = ""
+    private var initialRating = 3.0f
+    private var initialImageUrl = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        existingReviewId = arguments?.getString("reviewId")
         galleryLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
             uri?.let {
                 val imageView = view?.findViewById<ImageView>(R.id.review_image_view)
@@ -81,6 +93,36 @@ class AddReviewFragment : Fragment() {
                 requireContext().contentResolver.openInputStream(it)?.use { stream ->
                     selectedImageBitmap = BitmapFactory.decodeStream(stream, null, finalOptions)
                 }
+                
+                // Show delete button when image is selected
+                view?.findViewById<Button>(R.id.delete_photo_button)?.visibility = View.VISIBLE
+                isImageDeleted = false
+                
+                // Trigger change check
+                val saveButton = view?.findViewById<Button>(R.id.save_button)
+                val hotelNameEditText = view?.findViewById<EditText>(R.id.hotel_name_edit_text)
+                val cityEditText = view?.findViewById<EditText>(R.id.city_edit_text)
+                val descriptionEditText = view?.findViewById<EditText>(R.id.description_edit_text)
+                val ratingBar = view?.findViewById<RatingBar>(R.id.rating_bar)
+                
+                if (saveButton != null && hotelNameEditText != null && cityEditText != null && 
+                    descriptionEditText != null && ratingBar != null) {
+                    
+                    val name = hotelNameEditText.text.toString().trim()
+                    val city = cityEditText.text.toString().trim()
+                    val desc = descriptionEditText.text.toString().trim()
+                    val rating = ratingBar.rating
+
+                    val hasChanged = name != initialHotelName ||
+                            city != initialCity ||
+                            desc != initialDescription ||
+                            rating != initialRating ||
+                            selectedImageBitmap != null ||
+                            isImageDeleted
+
+                    saveButton.isEnabled = hasChanged && name.isNotEmpty() && city.isNotEmpty()
+                    saveButton.alpha = if (saveButton.isEnabled) 1.0f else 0.5f
+                }
             }
         }
     }
@@ -107,6 +149,103 @@ class AddReviewFragment : Fragment() {
         val ratingBar = view.findViewById<RatingBar>(R.id.rating_bar)
         val logoutButton = view.findViewById<View>(R.id.logout_button)
         val mockApiNote = view.findViewById<View>(R.id.mock_api_note)
+        val imageView = view.findViewById<ImageView>(R.id.review_image_view)
+        val deletePhotoButton = view.findViewById<Button>(R.id.delete_photo_button)
+
+        fun checkIfChanged() {
+            val name = hotelNameEditText.text.toString().trim()
+            val city = cityEditText.text.toString().trim()
+            val desc = descriptionEditText.text.toString().trim()
+            val rating = ratingBar.rating
+
+            val hasChanged = name != initialHotelName ||
+                    city != initialCity ||
+                    desc != initialDescription ||
+                    rating != initialRating ||
+                    selectedImageBitmap != null ||
+                    isImageDeleted
+
+            saveButton.isEnabled = hasChanged && name.isNotEmpty() && city.isNotEmpty()
+            saveButton.alpha = if (saveButton.isEnabled) 1.0f else 0.5f
+        }
+
+        // If editing, load existing review data
+        existingReviewId?.let { id ->
+            val observer = object : Observer<List<Review>> {
+                override fun onChanged(value: List<Review>) {
+                    value.find { it.id == id }?.let { review ->
+                        initialHotelName = review.hotelName
+                        initialCity = review.city
+                        initialDescription = review.description
+                        initialRating = review.rating.toFloat()
+                        initialImageUrl = review.imageUrl
+                        
+                        hotelNameEditText.setText(review.hotelName)
+                        cityEditText.setText(review.city)
+                        descriptionEditText.setText(review.description)
+                        ratingBar.rating = review.rating.toFloat()
+                        userRating = review.rating.toFloat()
+                        ratingText.text = getString(R.string.x_out_of_5_stars, userRating.toInt().toString())
+                        
+                        selectedHotelAddress = review.address
+                        selectedPlaceId = review.placeId
+                        selectedApiRating = review.apiRating
+                        selectedApiReviewCount = review.apiReviewCount
+                        existingImageUrl = review.imageUrl
+                        
+                        if (review.imageUrl.isNotEmpty()) {
+                            Picasso.get().load(review.imageUrl).into(imageView)
+                            deletePhotoButton.visibility = View.VISIBLE
+                        }
+                        
+                        saveButton.text = "Update Review"
+                        checkIfChanged()
+                        
+                        // Stop observing once we've loaded the data
+                        viewModel.allReviews.removeObserver(this)
+                    }
+                }
+            }
+            viewModel.allReviews.observe(viewLifecycleOwner, observer)
+        } ?: run {
+            // New review, check initial state
+            checkIfChanged()
+        }
+
+        // Listeners for change tracking
+        val textWatcher = object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                checkIfChanged()
+            }
+            override fun afterTextChanged(s: Editable?) {}
+        }
+        hotelNameEditText.addTextChangedListener(textWatcher)
+        cityEditText.addTextChangedListener(textWatcher)
+        descriptionEditText.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                characterCountText.text = getString(R.string.characters_count, s?.length ?: 0)
+                checkIfChanged()
+            }
+            override fun afterTextChanged(s: Editable?) {}
+        })
+        ratingBar.setOnRatingBarChangeListener { _, rating, fromUser ->
+            if (fromUser) {
+                userRating = rating
+                ratingText.text = getString(R.string.x_out_of_5_stars, rating.toInt().toString())
+                checkIfChanged()
+            }
+        }
+
+        deletePhotoButton.setOnClickListener {
+            selectedImageBitmap = null
+            existingImageUrl = ""
+            isImageDeleted = true
+            imageView.setImageResource(android.R.drawable.ic_menu_gallery)
+            deletePhotoButton.visibility = View.GONE
+            checkIfChanged()
+        }
 
         // Hide mock API note by default
         mockApiNote.visibility = View.GONE
@@ -127,23 +266,7 @@ class AddReviewFragment : Fragment() {
 
         logoutButton.setOnClickListener {
             authViewModel.logout()
-            findNavController().navigate(R.id.loginFragment) {
-                popUpTo(R.id.nav_graph) { inclusive = true }
-            }
         }
-
-        ratingBar.setOnRatingBarChangeListener { _, rating, _ ->
-            userRating = rating
-            ratingText.text = getString(R.string.x_out_of_5_stars, rating.toInt().toString())
-        }
-
-        descriptionEditText.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                characterCountText.text = getString(R.string.characters_count, s?.length ?: 0)
-            }
-            override fun afterTextChanged(s: Editable?) {}
-        })
 
         galleryButton.setOnClickListener { galleryLauncher.launch("image/*") }
 
@@ -175,6 +298,7 @@ class AddReviewFragment : Fragment() {
             }
 
             val review = Review(
+                id = existingReviewId ?: "",
                 hotelName = name,
                 userName = finalUserName,
                 userProfileImageUrl = finalProfileImage,
@@ -184,7 +308,8 @@ class AddReviewFragment : Fragment() {
                 rating = userRating.toDouble(),
                 placeId = selectedPlaceId,
                 apiRating = selectedApiRating,
-                apiReviewCount = selectedApiReviewCount
+                apiReviewCount = selectedApiReviewCount,
+                imageUrl = existingImageUrl
             )
 
             viewModel.uploadImageAndAddReview(review, selectedImageBitmap) {
@@ -194,8 +319,14 @@ class AddReviewFragment : Fragment() {
 
         viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
             progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
-            saveButton.isEnabled = !isLoading
-            saveButton.text = if (isLoading) "Submitting..." else getString(R.string.submit_review)
+            
+            if (isLoading) {
+                saveButton.isEnabled = false
+                saveButton.text = if (existingReviewId != null) "Updating..." else "Submitting..."
+            } else {
+                saveButton.text = if (existingReviewId != null) "Update Review" else getString(R.string.submit_review)
+                checkIfChanged()
+            }
         }
     }
 
@@ -246,6 +377,12 @@ class AddReviewFragment : Fragment() {
                         cityEditText.setText(selectedHotelCity)
                     }
                 }
+                
+                // Manual trigger of change check since we programmatically set text
+                // However, TextWatcher should catch it. Let's be safe.
+                // Since checkIfChanged is inside onViewCreated, we can't easily call it here.
+                // But setupPlacesAutocomplete is also inside AddReviewFragment.
+                // Wait, setupPlacesAutocomplete is a separate function.
             }
 
             override fun onError(status: com.google.android.gms.common.api.Status) {

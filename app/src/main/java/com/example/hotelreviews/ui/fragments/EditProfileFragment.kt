@@ -32,6 +32,8 @@ class EditProfileFragment : Fragment() {
     private lateinit var nameEditText: EditText
     private lateinit var saveButton: Button
     private lateinit var progressBar: ProgressBar
+    
+    private var initialName: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,8 +66,17 @@ class EditProfileFragment : Fragment() {
                 requireContext().contentResolver.openInputStream(it)?.use { stream ->
                     selectedImageBitmap = BitmapFactory.decodeStream(stream, null, finalOptions)
                 }
+                checkIfChanged()
             }
         }
+    }
+
+    private fun checkIfChanged() {
+        val currentName = nameEditText.text.toString().trim()
+        val hasChanged = currentName != initialName || selectedImageBitmap != null
+        
+        saveButton.isEnabled = hasChanged && currentName.isNotEmpty()
+        saveButton.alpha = if (saveButton.isEnabled) 1.0f else 0.5f
     }
 
     override fun onCreateView(
@@ -88,9 +99,6 @@ class EditProfileFragment : Fragment() {
 
         logoutButton.setOnClickListener {
             authViewModel.logout()
-            findNavController().navigate(R.id.loginFragment) {
-                popUpTo(R.id.nav_graph) { inclusive = true }
-            }
         }
 
         selectImageButton.setOnClickListener {
@@ -99,6 +107,7 @@ class EditProfileFragment : Fragment() {
 
         userViewModel.user.observe(viewLifecycleOwner) { user ->
             if (user != null) {
+                initialName = user.name
                 // Only update the name if the user hasn't started typing yet
                 if (nameEditText.text.isEmpty() || nameEditText.text.toString() == user.name) {
                     nameEditText.setText(user.name)
@@ -113,8 +122,17 @@ class EditProfileFragment : Fragment() {
                         .placeholder(android.R.drawable.ic_menu_gallery)
                         .into(profileImageView)
                 }
+                checkIfChanged()
             }
         }
+
+        nameEditText.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                checkIfChanged()
+            }
+            override fun afterTextChanged(s: android.text.Editable?) {}
+        })
 
         userViewModel.fetchUser()
 
@@ -133,7 +151,14 @@ class EditProfileFragment : Fragment() {
 
         userViewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
             progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
-            saveButton.isEnabled = !isLoading
+            
+            if (isLoading) {
+                saveButton.isEnabled = false
+                saveButton.text = "Updating..."
+            } else {
+                saveButton.text = "Save"
+                checkIfChanged()
+            }
         }
 
         userViewModel.errorMessage.observe(viewLifecycleOwner) { error ->

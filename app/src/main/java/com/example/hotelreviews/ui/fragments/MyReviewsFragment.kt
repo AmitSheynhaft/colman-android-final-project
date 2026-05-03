@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ProgressBar
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
@@ -45,7 +46,23 @@ class MyReviewsFragment : Fragment() {
         val addFab = view.findViewById<FloatingActionButton>(R.id.add_review_fab)
         val addFirstReviewButton = view.findViewById<Button>(R.id.add_first_review_button)
         
-        adapter = ReviewsAdapter(emptyList(), showUserName = false)
+        adapter = ReviewsAdapter(
+            reviews = emptyList(),
+            showUserName = false,
+            showActions = true,
+            onEditClick = { review ->
+                val bundle = Bundle().apply {
+                    putString("reviewId", review.id)
+                }
+                findNavController().navigate(R.id.action_myReviewsFragment_to_addReviewFragment, bundle)
+            },
+            onDeleteClick = { review ->
+                // Basic confirmation could be added here, but for now direct delete
+                viewModel.deleteReview(review) {
+                    Toast.makeText(requireContext(), "Review deleted", Toast.LENGTH_SHORT).show()
+                }
+            }
+        )
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         recyclerView.adapter = adapter
         
@@ -85,7 +102,6 @@ class MyReviewsFragment : Fragment() {
 
         logoutButton.setOnClickListener {
             authViewModel.logout()
-            findNavController().navigate(R.id.action_myReviewsFragment_to_loginFragment)
         }
     }
 

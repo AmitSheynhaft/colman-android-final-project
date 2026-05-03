@@ -63,11 +63,13 @@ object ReviewModel {
     }
 
     fun addReview(review: Review, onComplete: () -> Unit) {
-        val docRef = reviewsCollection.document()
-        review.id = docRef.id
+        if (review.id.isEmpty()) {
+            val docRef = reviewsCollection.document()
+            review.id = docRef.id
+        }
         review.lastUpdated = System.currentTimeMillis()
         review.isDeleted = false
-        docRef.set(review).addOnSuccessListener {
+        reviewsCollection.document(review.id).set(review).addOnSuccessListener {
             MyApplication.Globals.executorService.execute {
                 reviewDao.insert(review)
                 MyApplication.Globals.mainHandler.post {
@@ -77,6 +79,40 @@ object ReviewModel {
         }.addOnFailureListener {
             onComplete()
         }
+    }
+
+    fun deleteReview(review: Review, onComplete: () -> Unit) {
+        review.isDeleted = true
+        review.lastUpdated = System.currentTimeMillis()
+        reviewsCollection.document(review.id).set(review).addOnSuccessListener {
+            MyApplication.Globals.executorService.execute {
+                reviewDao.insert(review)
+                MyApplication.Globals.mainHandler.post {
+                    onComplete()
+                }
+            }
+        }.addOnFailureListener {
+            onComplete()
+        }
+    }
+
+    fun updateUserInReviews(userId: String, newName: String, newImageUrl: String, onComplete: () -> Unit) {
+        // 1. Update Firestore
+        reviewsCollection.whereEqualTo("userId", userId).get().addOnSuccessListener { snapshot ->
+            val batch = firestore.batch()
+            for (doc in snapshot.documents) {
+                batch.update(doc.reference, "userName", newName, "userProfileImageUrl", newImageUrl, "lastUpdated", System.currentTimeMillis())
+            }
+            batch.commit().addOnSuccessListener {
+                // 2. Update Room
+                MyApplication.Globals.executorService.execute {
+                    reviewDao.updateUserInfo(userId, newName, newImageUrl)
+                    MyApplication.Globals.mainHandler.post {
+                        onComplete()
+                    }
+                }
+            }.addOnFailureListener { onComplete() }
+        }.addOnFailureListener { onComplete() }
     }
 
     fun uploadImage(bitmap: android.graphics.Bitmap, name: String, onComplete: (String?) -> Unit) {

@@ -59,9 +59,6 @@ class FeedFragment : Fragment() {
 
         logoutButton.setOnClickListener {
             authViewModel.logout()
-            findNavController().navigate(R.id.loginFragment) {
-                popUpTo(R.id.nav_graph) { inclusive = true }
-            }
         }
     }
 

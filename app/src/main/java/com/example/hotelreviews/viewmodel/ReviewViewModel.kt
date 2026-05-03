@@ -55,4 +55,21 @@ class ReviewViewModel : ViewModel() {
             }
         }
     }
+
+    fun deleteReview(review: Review, onComplete: () -> Unit) {
+        _isLoading.value = true
+        ReviewModel.deleteReview(review) {
+            _isLoading.value = false
+            onComplete()
+        }
+    }
+    
+    fun getReviewById(reviewId: String): LiveData<Review?> {
+        // We can implement a direct DAO call for this
+        val result = MutableLiveData<Review?>()
+        allReviews.value?.find { it.id == reviewId }?.let {
+            result.value = it
+        }
+        return result
+    }
 }

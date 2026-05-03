@@ -31,4 +31,7 @@ interface ReviewDao {
 
     @Query("DELETE FROM reviews")
     fun deleteAll()
+
+    @Query("UPDATE reviews SET userName = :newName, userProfileImageUrl = :newImageUrl WHERE userId = :userId")
+    fun updateUserInfo(userId: String, newName: String, newImageUrl: String)
 }
