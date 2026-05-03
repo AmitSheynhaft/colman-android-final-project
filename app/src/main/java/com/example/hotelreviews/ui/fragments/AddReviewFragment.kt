@@ -148,7 +148,6 @@ class AddReviewFragment : Fragment() {
         val progressBar = view.findViewById<ProgressBar>(R.id.save_progress_bar)
         val ratingBar = view.findViewById<RatingBar>(R.id.rating_bar)
         val logoutButton = view.findViewById<View>(R.id.logout_button)
-        val mockApiNote = view.findViewById<View>(R.id.mock_api_note)
         val imageView = view.findViewById<ImageView>(R.id.review_image_view)
         val deletePhotoButton = view.findViewById<Button>(R.id.delete_photo_button)
 
@@ -246,9 +245,6 @@ class AddReviewFragment : Fragment() {
             deletePhotoButton.visibility = View.GONE
             checkIfChanged()
         }
-
-        // Hide mock API note by default
-        mockApiNote.visibility = View.GONE
 
         // Initialize UI with default value
         ratingBar.rating = userRating
@@ -356,9 +352,6 @@ class AddReviewFragment : Fragment() {
                 selectedHotelAddress = place.formattedAddress ?: ""
                 
                 hotelNameEditText.setText(selectedHotelName)
-                
-                // Show mock API note when hotel is selected from Places
-                view?.findViewById<View>(R.id.mock_api_note)?.visibility = View.VISIBLE
                 
                 var cityFound = false
                 place.addressComponents?.asList()?.forEach { component ->

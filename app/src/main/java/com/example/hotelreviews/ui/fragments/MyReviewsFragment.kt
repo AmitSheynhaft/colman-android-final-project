@@ -41,7 +41,6 @@ class MyReviewsFragment : Fragment() {
         val logoutButton = view.findViewById<View>(R.id.logout_button)
         val recyclerView = view.findViewById<RecyclerView>(R.id.reviews_recycler_view)
         val emptyStateLayout = view.findViewById<View>(R.id.empty_state_layout)
-        val progressBar = view.findViewById<ProgressBar>(R.id.reviews_progress_bar)
         val swipeRefresh = view.findViewById<SwipeRefreshLayout>(R.id.swipe_refresh_layout)
         val addFab = view.findViewById<FloatingActionButton>(R.id.add_review_fab)
         val addFirstReviewButton = view.findViewById<Button>(R.id.add_first_review_button)
@@ -85,7 +84,6 @@ class MyReviewsFragment : Fragment() {
         }
         
         viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
-            progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
             swipeRefresh.isRefreshing = isLoading
         }
         
