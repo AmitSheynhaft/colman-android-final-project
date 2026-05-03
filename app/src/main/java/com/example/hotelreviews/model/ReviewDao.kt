@@ -17,6 +17,9 @@ interface ReviewDao {
     @Query("SELECT * FROM reviews WHERE userId = :userId AND isDeleted = 0 ORDER BY timestamp DESC")
     fun getByUserIdNonDeleted(userId: String): LiveData<List<Review>>
 
+    @Query("SELECT COUNT(*) FROM reviews")
+    fun getCount(): Int
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertAll(vararg reviews: Review)
 

@@ -23,38 +23,43 @@ object ReviewModel {
     }
 
     fun refreshAllReviews(onComplete: () -> Unit = {}) {
-        val lastUpdated = MyApplication.Globals.appContext?.getSharedPreferences("TAG", android.content.Context.MODE_PRIVATE)
-            ?.getLong(LAST_UPDATED, 0L) ?: 0L
+        MyApplication.Globals.executorService.execute {
+            val count = reviewDao.getCount()
+            val lastUpdated = if (count == 0) 0L else {
+                MyApplication.Globals.appContext?.getSharedPreferences("TAG", android.content.Context.MODE_PRIVATE)
+                    ?.getLong(LAST_UPDATED, 0L) ?: 0L
+            }
 
-        reviewsCollection.whereGreaterThan("lastUpdated", lastUpdated)
-            .get().addOnSuccessListener { snapshot ->
-                val remoteReviews = snapshot.toObjects(Review::class.java)
-                if (remoteReviews.isNotEmpty()) {
-                    MyApplication.Globals.executorService.execute {
-                        var latest = lastUpdated
-                        for (review in remoteReviews) {
-                            if (review.isDeleted) {
-                                reviewDao.delete(review)
-                            } else {
-                                reviewDao.insert(review)
+            reviewsCollection.whereGreaterThan("lastUpdated", lastUpdated)
+                .get().addOnSuccessListener { snapshot ->
+                    val remoteReviews = snapshot.toObjects(Review::class.java)
+                    if (remoteReviews.isNotEmpty()) {
+                        MyApplication.Globals.executorService.execute {
+                            var latest = lastUpdated
+                            for (review in remoteReviews) {
+                                if (review.isDeleted) {
+                                    reviewDao.delete(review)
+                                } else {
+                                    reviewDao.insert(review)
+                                }
+                                if (review.lastUpdated > latest) {
+                                    latest = review.lastUpdated
+                                }
                             }
-                            if (review.lastUpdated > latest) {
-                                latest = review.lastUpdated
+                            MyApplication.Globals.appContext?.getSharedPreferences("TAG", android.content.Context.MODE_PRIVATE)
+                                ?.edit()?.putLong(LAST_UPDATED, latest)?.apply()
+                            
+                            MyApplication.Globals.mainHandler.post {
+                                onComplete()
                             }
                         }
-                        MyApplication.Globals.appContext?.getSharedPreferences("TAG", android.content.Context.MODE_PRIVATE)
-                            ?.edit()?.putLong(LAST_UPDATED, latest)?.apply()
-                        
-                        MyApplication.Globals.mainHandler.post {
-                            onComplete()
-                        }
+                    } else {
+                        onComplete()
                     }
-                } else {
+                }.addOnFailureListener {
                     onComplete()
                 }
-            }.addOnFailureListener {
-                onComplete()
-            }
+        }
     }
 
     fun addReview(review: Review, onComplete: () -> Unit) {

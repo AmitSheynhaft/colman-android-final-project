@@ -45,7 +45,7 @@ class MyReviewsFragment : Fragment() {
         val addFab = view.findViewById<FloatingActionButton>(R.id.add_review_fab)
         val addFirstReviewButton = view.findViewById<Button>(R.id.add_first_review_button)
         
-        adapter = ReviewsAdapter(emptyList())
+        adapter = ReviewsAdapter(emptyList(), showUserName = false)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         recyclerView.adapter = adapter
         
