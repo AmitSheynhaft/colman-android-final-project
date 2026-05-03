@@ -36,6 +36,7 @@ class AddReviewFragment : Fragment() {
     
     private var selectedHotelName: String = ""
     private var selectedHotelCity: String = ""
+    private var selectedHotelAddress: String = ""
     private var selectedPlaceId: String = ""
     private var selectedApiRating: Double = 0.0
     private var selectedApiReviewCount: Int = 0
@@ -107,6 +108,7 @@ class AddReviewFragment : Fragment() {
 
             val review = Review(
                 hotelName = selectedHotelName,
+                address = selectedHotelAddress,
                 description = desc,
                 city = selectedHotelCity,
                 rating = userRating.toDouble(),
@@ -133,6 +135,7 @@ class AddReviewFragment : Fragment() {
         autocompleteFragment.setPlaceFields(listOf(
             Place.Field.ID, 
             Place.Field.DISPLAY_NAME,
+            Place.Field.FORMATTED_ADDRESS,
             Place.Field.ADDRESS_COMPONENTS, 
             Place.Field.RATING, 
             Place.Field.USER_RATING_COUNT
@@ -147,6 +150,7 @@ class AddReviewFragment : Fragment() {
                 selectedPlaceId = place.id ?: ""
                 selectedApiRating = place.rating ?: 0.0
                 selectedApiReviewCount = place.userRatingCount ?: 0
+                selectedHotelAddress = place.formattedAddress ?: ""
                 
                 place.addressComponents?.asList()?.forEach { component ->
                     if (component.types.contains("locality")) {

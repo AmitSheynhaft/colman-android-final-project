@@ -15,10 +15,12 @@ class ReviewsAdapter(private var reviews: List<Review>) : RecyclerView.Adapter<R
 
     class ReviewViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val imageView: ImageView = view.findViewById(R.id.review_image)
+        val imageCard: View = view.findViewById(R.id.image_card)
         val hotelNameText: TextView = view.findViewById(R.id.hotel_name_text)
         val hotelCityText: TextView = view.findViewById(R.id.hotel_city_text)
         val hotelRatingBar: RatingBar = view.findViewById(R.id.hotel_rating_bar)
         val descriptionText: TextView = view.findViewById(R.id.review_description_text)
+        val apiRatingText: TextView = view.findViewById(R.id.api_rating_text)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ReviewViewHolder {
@@ -29,14 +31,17 @@ class ReviewsAdapter(private var reviews: List<Review>) : RecyclerView.Adapter<R
     override fun onBindViewHolder(holder: ReviewViewHolder, position: Int) {
         val review = reviews[position]
         holder.hotelNameText.text = review.hotelName
-        holder.hotelCityText.text = review.city
+        holder.hotelCityText.text = if (review.address.isNotEmpty()) review.address else review.city
         holder.hotelRatingBar.rating = review.rating.toFloat()
         holder.descriptionText.text = review.description
         
+        holder.apiRatingText.text = String.format("%.1f (%d)", review.apiRating, review.apiReviewCount)
+
         if (review.imageUrl.isNotEmpty()) {
+            holder.imageCard.visibility = View.VISIBLE
             Picasso.get().load(review.imageUrl).into(holder.imageView)
         } else {
-            holder.imageView.setImageResource(android.R.drawable.ic_menu_gallery)
+            holder.imageCard.visibility = View.GONE
         }
     }
 

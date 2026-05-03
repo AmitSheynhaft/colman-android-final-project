@@ -11,6 +11,7 @@ data class Review(
     var id: String = "",
     var userId: String = "",
     var hotelName: String = "",
+    var address: String = "",
     var city: String = "",
     var rating: Double = 0.0,
     var description: String = "",
