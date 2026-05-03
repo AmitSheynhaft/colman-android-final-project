@@ -8,18 +8,24 @@ interface ReviewDao {
     @Query("SELECT * FROM reviews ORDER BY timestamp DESC")
     fun getAll(): LiveData<List<Review>>
 
+    @Query("SELECT * FROM reviews WHERE isDeleted = 0 ORDER BY timestamp DESC")
+    fun getAllNonDeleted(): LiveData<List<Review>>
+
     @Query("SELECT * FROM reviews WHERE userId = :userId ORDER BY timestamp DESC")
     fun getByUserId(userId: String): LiveData<List<Review>>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertAll(vararg reviews: Review)
+    @Query("SELECT * FROM reviews WHERE userId = :userId AND isDeleted = 0 ORDER BY timestamp DESC")
+    fun getByUserIdNonDeleted(userId: String): LiveData<List<Review>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(review: Review)
+    fun insertAll(vararg reviews: Review)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insert(review: Review)
 
     @Delete
-    suspend fun delete(review: Review)
+    fun delete(review: Review)
 
     @Query("DELETE FROM reviews")
-    suspend fun deleteAll()
+    fun deleteAll()
 }

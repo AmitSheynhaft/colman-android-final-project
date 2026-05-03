@@ -1,0 +1,21 @@
+<resources>
+    <style name="Theme.StayRate" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">@color/purple_primary</item>
+        <item name="colorPrimaryVariant">@color/purple_primary</item>
+        <item name="colorOnPrimary">@color/white</item>
+
+        <!-- Secondary brand color. -->
+        <item name="colorSecondary">@color/purple_light</item>
+        <item name="colorSecondaryVariant">@color/purple_primary</item>
+        <item name="colorOnSecondary">@color/black</item>
+
+        <!-- Background and Surface colors -->
+        <item name="android:windowBackground">@color/background_light</item>
+        <item name="colorSurface">@color/white</item>
+        <item name="colorOnSurface">@color/black</item>
+
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor">@color/purple_primary</item>
+    </style>
+</resources>

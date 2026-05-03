@@ -9,7 +9,7 @@
         android:id="@+id/myReviewsFragment"
         android:name="com.example.hotelreviews.ui.fragments.MyReviewsFragment"
         android:label="My Reviews"
-        tools:layout="@layout/fragment_compose_host">
+        tools:layout="@layout/fragment_my_reviews">
         <action
             android:id="@+id/action_myReviewsFragment_to_addReviewFragment"
             app:destination="@id/addReviewFragment" />
@@ -18,19 +18,37 @@
             app:destination="@id/loginFragment"
             app:popUpTo="@id/nav_graph"
             app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_myReviewsFragment_to_editProfileFragment"
+            app:destination="@id/editProfileFragment" />
+        <action
+            android:id="@+id/action_myReviewsFragment_to_feedFragment"
+            app:destination="@id/feedFragment" />
     </fragment>
+
+    <fragment
+        android:id="@+id/feedFragment"
+        android:name="com.example.hotelreviews.ui.fragments.FeedFragment"
+        android:label="Feed"
+        tools:layout="@layout/fragment_feed" />
+
+    <fragment
+        android:id="@+id/editProfileFragment"
+        android:name="com.example.hotelreviews.ui.fragments.EditProfileFragment"
+        android:label="Edit Profile"
+        tools:layout="@layout/fragment_edit_profile" />
 
     <fragment
         android:id="@+id/addReviewFragment"
         android:name="com.example.hotelreviews.ui.fragments.AddReviewFragment"
         android:label="Add Review"
-        tools:layout="@layout/fragment_compose_host" />
+        tools:layout="@layout/fragment_add_review" />
 
     <fragment
         android:id="@+id/loginFragment"
         android:name="com.example.hotelreviews.ui.fragments.LoginFragment"
         android:label="Login"
-        tools:layout="@layout/fragment_compose_host">
+        tools:layout="@layout/fragment_login">
         <action
             android:id="@+id/action_loginFragment_to_registerFragment"
             app:destination="@id/registerFragment" />
@@ -45,7 +63,7 @@
         android:id="@+id/registerFragment"
         android:name="com.example.hotelreviews.ui.fragments.RegisterFragment"
         android:label="Register"
-        tools:layout="@layout/fragment_compose_host">
+        tools:layout="@layout/fragment_register">
         <action
             android:id="@+id/action_registerFragment_to_myReviewsFragment"
             app:destination="@id/myReviewsFragment"

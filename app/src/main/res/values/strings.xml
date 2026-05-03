@@ -1,3 +1,47 @@
 <resources>
     <string name="app_name">StayRate</string>
+    <string name="login">Sign In</string>
+    <string name="register">Sign up</string>
+    <string name="email">User email</string>
+    <string name="email_hint">Enter your user email</string>
+    <string name="password">Password</string>
+    <string name="password_hint">Enter your password</string>
+    <string name="dont_have_account">Don\'t have an account? Sign up</string>
+    <string name="already_have_account">Already have an account? Sign In</string>
+    <string name="hotel_name">Hotel Name</string>
+    <string name="description">Description</string>
+    <string name="capture_image">Capture Image</string>
+    <string name="select_from_gallery">Select from Gallery</string>
+    <string name="save_review">Save Review</string>
+    <string name="my_reviews">My Reviews</string>
+    <string name="logout">Logout</string>
+    <string name="edit_profile">Edit Profile</string>
+    <string name="global_feed">Global Feed</string>
+    <string name="discover_new_places">Discover new places</string>
+    <string name="reviews_shared_count">%1$d reviews shared</string>
+
+    <!-- New Strings -->
+    <string name="welcome_back">Welcome Back</string>
+    <string name="sign_in_to_continue">Sign in to continue</string>
+    <string name="remember_me">Remember me for 30 days</string>
+    <string name="zero_reviews">0 reviews</string>
+    <string name="no_reviews_yet">No Reviews Yet</string>
+    <string name="no_reviews_subtitle">Start your journey by sharing your first hotel experience. Your reviews help others make better travel decisions!</string>
+    <string name="add_your_first_review">Add Your First Review</string>
+    <string name="login_subtitle">Login to your account</string>
+    <string name="create_account">Create Account</string>
+    <string name="full_name">Full Name</string>
+    <string name="add_hotel_review">Add Hotel Review</string>
+    <string name="take_photo">Take Photo</string>
+    <string name="from_gallery">From Gallery</string>
+    <string name="describe_your_stay">Describe your stay...</string>
+    <string name="post_review">Post Review</string>
+    <string name="city">City</string>
+    <string name="review_placeholder">Review description goes here...</string>
+    <string name="error_name_empty">Name cannot be empty</string>
+    <string name="profile_updated">Profile updated successfully</string>
+    <string name="error_upload_failed">Failed to upload image</string>
+    <string name="error_fill_all_fields">Please fill all fields</string>
+    <string name="error_select_hotel">Please select a hotel</string>
+    <string name="search_hotel_hint">Search for a hotel...</string>
 </resources>

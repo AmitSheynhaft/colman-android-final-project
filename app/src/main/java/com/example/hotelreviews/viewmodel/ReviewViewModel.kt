@@ -1,54 +1,58 @@
 package com.example.hotelreviews.viewmodel
 
-import android.app.Application
-import androidx.lifecycle.*
-import com.example.hotelreviews.model.AppDatabase
+import android.graphics.Bitmap
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import com.example.hotelreviews.model.AuthModel
 import com.example.hotelreviews.model.Review
-import com.example.hotelreviews.model.ReviewRepository
-import kotlinx.coroutines.launch
+import com.example.hotelreviews.model.ReviewModel
+import java.util.UUID
 
-class ReviewViewModel(application: Application) : AndroidViewModel(application) {
-    private val repository: ReviewRepository
-    val allReviews: LiveData<List<Review>>
+class ReviewViewModel : ViewModel() {
+    val allReviews: LiveData<List<Review>> = ReviewModel.getAllReviews()
+    
+    fun getReviewsByUserId(userId: String): LiveData<List<Review>> {
+        return ReviewModel.getReviewsByUserId(userId)
+    }
     
     private val _isLoading = MutableLiveData<Boolean>(false)
     val isLoading: LiveData<Boolean> = _isLoading
 
-    init {
-        val reviewDao = AppDatabase.getDatabase(application).reviewDao()
-        repository = ReviewRepository(reviewDao)
-        allReviews = repository.allReviews
-    }
-
-    fun refreshReviews(onComplete: (() -> Unit)? = null) = viewModelScope.launch {
+    fun refreshReviews() {
         _isLoading.value = true
-        repository.refreshReviews()
-        _isLoading.value = false
-        onComplete?.invoke()
+        ReviewModel.refreshAllReviews {
+            _isLoading.value = false
+        }
     }
 
-    fun addReview(review: Review, onComplete: (() -> Unit)? = null) = viewModelScope.launch {
+    fun addReview(review: Review, onComplete: () -> Unit) {
         _isLoading.value = true
-        repository.addReview(review)
-        _isLoading.value = false
-        onComplete?.invoke()
+        review.userId = AuthModel.getCurrentUser()?.uid ?: ""
+        ReviewModel.addReview(review) {
+            _isLoading.value = false
+            onComplete()
+        }
     }
 
-    fun updateReview(review: Review, onComplete: (() -> Unit)? = null) = viewModelScope.launch {
+    fun uploadImageAndAddReview(review: Review, bitmap: Bitmap?, onComplete: () -> Unit) {
         _isLoading.value = true
-        repository.updateReview(review)
-        _isLoading.value = false
-        onComplete?.invoke()
-    }
-
-    fun deleteReview(review: Review, onComplete: (() -> Unit)? = null) = viewModelScope.launch {
-        _isLoading.value = true
-        repository.deleteReview(review)
-        _isLoading.value = false
-        onComplete?.invoke()
-    }
-
-    fun getReviewsByUser(userId: String): LiveData<List<Review>> {
-        return repository.getReviewsByUser(userId)
+        review.userId = AuthModel.getCurrentUser()?.uid ?: ""
+        
+        if (bitmap != null) {
+            val fileName = UUID.randomUUID().toString()
+            ReviewModel.uploadImage(bitmap, fileName) { imageUrl ->
+                review.imageUrl = imageUrl ?: ""
+                ReviewModel.addReview(review) {
+                    _isLoading.value = false
+                    onComplete()
+                }
+            }
+        } else {
+            ReviewModel.addReview(review) {
+                _isLoading.value = false
+                onComplete()
+            }
+        }
     }
 }

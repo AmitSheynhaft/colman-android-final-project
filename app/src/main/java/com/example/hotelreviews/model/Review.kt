@@ -18,5 +18,7 @@ data class Review(
     var placeId: String = "",
     var apiRating: Double = 0.0,
     var apiReviewCount: Int = 0,
-    var timestamp: Long = System.currentTimeMillis()
+    var timestamp: Long = System.currentTimeMillis(),
+    var lastUpdated: Long = 0L,
+    var isDeleted: Boolean = false
 )

@@ -5,7 +5,13 @@
     <color name="purple_700">#FF3700B3</color>
     <color name="teal_200">#FF03DAC5</color>
     <color name="teal_700">#FF018786</color>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
     <color name="ic_launcher_background">#5D44F8</color>
+
+    <color name="purple_primary">#5D44F8</color>
+    <color name="purple_light">#EEECFF</color>
+    <color name="star_yellow">#FFC107</color>
+    <color name="gray_text">#757575</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="black">#FF000000</color>
+    <color name="background_light">#F8F9FE</color>
 </resources>
