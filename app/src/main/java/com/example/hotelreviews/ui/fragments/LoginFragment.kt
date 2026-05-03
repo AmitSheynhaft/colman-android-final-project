@@ -30,6 +30,11 @@ class LoginFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        if (authViewModel.user.value != null) {
+            findNavController().navigate(R.id.action_loginFragment_to_myReviewsFragment)
+            return
+        }
+
         val emailEditText = view.findViewById<EditText>(R.id.email_edit_text)
         val passwordEditText = view.findViewById<EditText>(R.id.password_edit_text)
         val loginButton = view.findViewById<Button>(R.id.login_button)
@@ -41,7 +46,7 @@ class LoginFragment : Fragment() {
             val password = passwordEditText.text.toString()
 
             if (email.isEmpty() || password.isEmpty()) {
-                Toast.makeText(requireContext(), "Please fill all fields", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), getString(R.string.error_fill_all_fields), Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 

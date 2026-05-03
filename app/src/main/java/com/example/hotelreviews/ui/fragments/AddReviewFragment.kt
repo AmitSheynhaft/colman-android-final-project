@@ -1,6 +1,7 @@
 package com.example.hotelreviews.ui.fragments
 
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -9,6 +10,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.ProgressBar
+import android.widget.RatingBar
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -17,10 +19,11 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.example.hotelreviews.R
 import com.example.hotelreviews.model.Review
-import com.example.hotelreviews.model.ReviewModel
 import com.example.hotelreviews.viewmodel.ReviewViewModel
+import com.google.android.libraries.places.api.model.Place
+import com.google.android.libraries.places.widget.AutocompleteSupportFragment
+import com.google.android.libraries.places.widget.listener.PlaceSelectionListener
 import com.squareup.picasso.Picasso
-import java.util.UUID
 
 class AddReviewFragment : Fragment() {
 
@@ -28,6 +31,13 @@ class AddReviewFragment : Fragment() {
     private var selectedImageBitmap: Bitmap? = null
     private lateinit var cameraLauncher: ActivityResultLauncher<Void?>
     private lateinit var galleryLauncher: ActivityResultLauncher<String>
+    
+    private var selectedHotelName: String = ""
+    private var selectedHotelCity: String = ""
+    private var selectedPlaceId: String = ""
+    private var selectedApiRating: Double = 0.0
+    private var selectedApiReviewCount: Int = 0
+    private var userRating: Float = 5.0f
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,7 +52,10 @@ class AddReviewFragment : Fragment() {
             uri?.let {
                 val imageView = view?.findViewById<ImageView>(R.id.review_image_view)
                 Picasso.get().load(it).into(imageView)
-                // In a real app we'd convert Uri to Bitmap if needed for upload
+                
+                requireContext().contentResolver.openInputStream(it)?.use { stream ->
+                    selectedImageBitmap = BitmapFactory.decodeStream(stream)
+                }
             }
         }
     }
@@ -58,29 +71,42 @@ class AddReviewFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val hotelNameEditText = view.findViewById<EditText>(R.id.hotel_name_edit_text)
+        setupPlacesAutocomplete()
+
         val descriptionEditText = view.findViewById<EditText>(R.id.description_edit_text)
         val captureButton = view.findViewById<Button>(R.id.capture_button)
         val galleryButton = view.findViewById<Button>(R.id.gallery_button)
         val saveButton = view.findViewById<Button>(R.id.save_button)
         val progressBar = view.findViewById<ProgressBar>(R.id.save_progress_bar)
+        val ratingBar = view.findViewById<RatingBar>(R.id.rating_bar)
+
+        ratingBar.setOnRatingBarChangeListener { _, rating, _ ->
+            userRating = rating
+        }
 
         captureButton.setOnClickListener { cameraLauncher.launch(null) }
         galleryButton.setOnClickListener { galleryLauncher.launch("image/*") }
 
         saveButton.setOnClickListener {
-            val name = hotelNameEditText.text.toString()
             val desc = descriptionEditText.text.toString()
 
-            if (name.isEmpty()) {
-                Toast.makeText(requireContext(), "Hotel name is required", Toast.LENGTH_SHORT).show()
+            if (selectedHotelName.isEmpty()) {
+                Toast.makeText(requireContext(), getString(R.string.error_select_hotel), Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
-            if (selectedImageBitmap != null) {
-                uploadImageAndSaveReview(name, desc, selectedImageBitmap!!)
-            } else {
-                saveReview(name, desc, "")
+            val review = Review(
+                hotelName = selectedHotelName,
+                description = desc,
+                city = selectedHotelCity,
+                rating = userRating.toDouble(),
+                placeId = selectedPlaceId,
+                apiRating = selectedApiRating,
+                apiReviewCount = selectedApiReviewCount
+            )
+
+            viewModel.uploadImageAndAddReview(review, selectedImageBitmap) {
+                findNavController().navigateUp()
             }
         }
 
@@ -90,33 +116,38 @@ class AddReviewFragment : Fragment() {
         }
     }
 
-    private fun uploadImageAndSaveReview(name: String, desc: String, bitmap: Bitmap) {
-        val fileName = UUID.randomUUID().toString()
-        viewModel.isLoading // Just to be safe, but we'll manage progress locally or via VM
-        
-        ReviewModel.uploadImage(bitmap, fileName) { imageUrl ->
-            if (imageUrl != null) {
-                saveReview(name, desc, imageUrl)
-            } else {
-                Toast.makeText(requireContext(), "Image upload failed", Toast.LENGTH_SHORT).show()
-                saveReview(name, desc, "")
-            }
-        }
-    }
+    private fun setupPlacesAutocomplete() {
+        val autocompleteFragment = childFragmentManager.findFragmentById(R.id.autocomplete_fragment)
+                as AutocompleteSupportFragment
 
-    private fun saveReview(name: String, desc: String, imageUrl: String) {
-        val review = Review(
-            hotelName = name,
-            description = desc,
-            imageUrl = imageUrl,
-            city = "", // Dummy for now
-            rating = 5.0, // Dummy
-            placeId = "",
-            apiRating = 0.0,
-            apiReviewCount = 0
-        )
-        viewModel.addReview(review) {
-            findNavController().navigateUp()
-        }
+        autocompleteFragment.setPlaceFields(listOf(
+            Place.Field.ID, 
+            Place.Field.DISPLAY_NAME,
+            Place.Field.ADDRESS_COMPONENTS, 
+            Place.Field.RATING, 
+            Place.Field.USER_RATING_COUNT
+        ))
+
+        autocompleteFragment.setHint(getString(R.string.search_hotel_hint))
+        autocompleteFragment.setTypesFilter(listOf("establishment"))
+
+        autocompleteFragment.setOnPlaceSelectedListener(object : PlaceSelectionListener {
+            override fun onPlaceSelected(place: Place) {
+                selectedHotelName = place.displayName ?: ""
+                selectedPlaceId = place.id ?: ""
+                selectedApiRating = place.rating ?: 0.0
+                selectedApiReviewCount = place.userRatingCount ?: 0
+                
+                place.addressComponents?.asList()?.forEach { component ->
+                    if (component.types.contains("locality")) {
+                        selectedHotelCity = component.name
+                    }
+                }
+            }
+
+            override fun onError(status: com.google.android.gms.common.api.Status) {
+                Toast.makeText(requireContext(), "Error: ${status.statusMessage}", Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 }

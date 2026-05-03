@@ -56,6 +56,7 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.swiperefreshlayout)
+    implementation(libs.google.material)
 
     // Google Places
     implementation(libs.google.places)

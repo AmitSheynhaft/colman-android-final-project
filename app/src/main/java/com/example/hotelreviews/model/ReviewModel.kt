@@ -9,33 +9,59 @@ import com.google.firebase.firestore.Query
 object ReviewModel {
     private val firestore = FirebaseFirestore.getInstance()
     private val reviewsCollection = firestore.collection("reviews")
-    private val localDb = AppDatabase.getDatabase(MyApplication.Globals.appContext!!)
-    private val reviewDao = localDb.reviewDao()
+    private val localDb by lazy { AppDatabase.getDatabase(MyApplication.Globals.appContext!!) }
+    private val reviewDao by lazy { localDb.reviewDao() }
+
+    private const val LAST_UPDATED = "lastUpdated"
 
     fun getAllReviews(): LiveData<List<Review>> {
-        return reviewDao.getAll()
+        return reviewDao.getAllNonDeleted()
+    }
+
+    fun getReviewsByUserId(userId: String): LiveData<List<Review>> {
+        return reviewDao.getByUserIdNonDeleted(userId)
     }
 
     fun refreshAllReviews(onComplete: () -> Unit = {}) {
-        // Delta sync logic
-        // For simplicity in this step, getting all and replacing
-        reviewsCollection.get().addOnSuccessListener { snapshot ->
-            val remoteReviews = snapshot.toObjects(Review::class.java)
-            MyApplication.Globals.executorService.execute {
-                reviewDao.deleteAll()
-                reviewDao.insertAll(*remoteReviews.toTypedArray())
-                MyApplication.Globals.mainHandler.post {
+        val lastUpdated = MyApplication.Globals.appContext?.getSharedPreferences("TAG", android.content.Context.MODE_PRIVATE)
+            ?.getLong(LAST_UPDATED, 0L) ?: 0L
+
+        reviewsCollection.whereGreaterThan("lastUpdated", lastUpdated)
+            .get().addOnSuccessListener { snapshot ->
+                val remoteReviews = snapshot.toObjects(Review::class.java)
+                if (remoteReviews.isNotEmpty()) {
+                    MyApplication.Globals.executorService.execute {
+                        var latest = lastUpdated
+                        for (review in remoteReviews) {
+                            if (review.isDeleted) {
+                                reviewDao.delete(review)
+                            } else {
+                                reviewDao.insert(review)
+                            }
+                            if (review.lastUpdated > latest) {
+                                latest = review.lastUpdated
+                            }
+                        }
+                        MyApplication.Globals.appContext?.getSharedPreferences("TAG", android.content.Context.MODE_PRIVATE)
+                            ?.edit()?.putLong(LAST_UPDATED, latest)?.apply()
+                        
+                        MyApplication.Globals.mainHandler.post {
+                            onComplete()
+                        }
+                    }
+                } else {
                     onComplete()
                 }
+            }.addOnFailureListener {
+                onComplete()
             }
-        }.addOnFailureListener {
-            onComplete()
-        }
     }
 
     fun addReview(review: Review, onComplete: () -> Unit) {
         val docRef = reviewsCollection.document()
         review.id = docRef.id
+        review.lastUpdated = System.currentTimeMillis()
+        review.isDeleted = false
         docRef.set(review).addOnSuccessListener {
             MyApplication.Globals.executorService.execute {
                 reviewDao.insert(review)
@@ -49,18 +75,24 @@ object ReviewModel {
     }
 
     fun uploadImage(bitmap: android.graphics.Bitmap, name: String, onComplete: (String?) -> Unit) {
-        val storageRef = com.google.firebase.storage.FirebaseStorage.getInstance().reference
-        val imageRef = storageRef.child("images/$name.jpg")
-        val baos = java.io.ByteArrayOutputStream()
-        bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 100, baos)
-        val data = baos.toByteArray()
+        MyApplication.Globals.executorService.execute {
+            val storageRef = com.google.firebase.storage.FirebaseStorage.getInstance().reference
+            val imageRef = storageRef.child("images/$name.jpg")
+            val baos = java.io.ByteArrayOutputStream()
+            bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 70, baos)
+            val data = baos.toByteArray()
 
-        imageRef.putBytes(data).addOnSuccessListener {
-            imageRef.downloadUrl.addOnSuccessListener { uri: android.net.Uri ->
-                onComplete(uri.toString())
+            imageRef.putBytes(data).addOnSuccessListener {
+                imageRef.downloadUrl.addOnSuccessListener { uri: android.net.Uri ->
+                    MyApplication.Globals.mainHandler.post {
+                        onComplete(uri.toString())
+                    }
+                }
+            }.addOnFailureListener {
+                MyApplication.Globals.mainHandler.post {
+                    onComplete(null)
+                }
             }
-        }.addOnFailureListener {
-            onComplete(null)
         }
     }
 }

@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.RatingBar
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.hotelreviews.R
@@ -15,7 +16,9 @@ class ReviewsAdapter(private var reviews: List<Review>) : RecyclerView.Adapter<R
     class ReviewViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val imageView: ImageView = view.findViewById(R.id.review_image)
         val hotelNameText: TextView = view.findViewById(R.id.hotel_name_text)
-        val descriptionText: TextView = view.findViewById(R.id.description_text)
+        val hotelCityText: TextView = view.findViewById(R.id.hotel_city_text)
+        val hotelRatingBar: RatingBar = view.findViewById(R.id.hotel_rating_bar)
+        val descriptionText: TextView = view.findViewById(R.id.review_description_text)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ReviewViewHolder {
@@ -26,6 +29,8 @@ class ReviewsAdapter(private var reviews: List<Review>) : RecyclerView.Adapter<R
     override fun onBindViewHolder(holder: ReviewViewHolder, position: Int) {
         val review = reviews[position]
         holder.hotelNameText.text = review.hotelName
+        holder.hotelCityText.text = review.city
+        holder.hotelRatingBar.rating = review.rating.toFloat()
         holder.descriptionText.text = review.description
         
         if (review.imageUrl.isNotEmpty()) {

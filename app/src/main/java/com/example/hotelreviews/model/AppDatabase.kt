@@ -5,9 +5,10 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [Review::class], version = 2, exportSchema = false)
+@Database(entities = [Review::class, User::class], version = 6, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun reviewDao(): ReviewDao
+    abstract fun userDao(): UserDao
 
     companion object {
         @Volatile

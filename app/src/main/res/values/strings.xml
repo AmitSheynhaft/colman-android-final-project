@@ -14,4 +14,22 @@
     <string name="my_reviews">My Reviews</string>
     <string name="logout">Logout</string>
     <string name="edit_profile">Edit Profile</string>
+
+    <!-- New Strings -->
+    <string name="login_subtitle">Login to your account</string>
+    <string name="create_account">Create Account</string>
+    <string name="full_name">Full Name</string>
+    <string name="add_hotel_review">Add Hotel Review</string>
+    <string name="take_photo">Take Photo</string>
+    <string name="from_gallery">From Gallery</string>
+    <string name="describe_your_stay">Describe your stay...</string>
+    <string name="post_review">Post Review</string>
+    <string name="city">City</string>
+    <string name="review_placeholder">Review description goes here...</string>
+    <string name="error_name_empty">Name cannot be empty</string>
+    <string name="profile_updated">Profile updated successfully</string>
+    <string name="error_upload_failed">Failed to upload image</string>
+    <string name="error_fill_all_fields">Please fill all fields</string>
+    <string name="error_select_hotel">Please select a hotel</string>
+    <string name="search_hotel_hint">Search for a hotel...</string>
 </resources>
