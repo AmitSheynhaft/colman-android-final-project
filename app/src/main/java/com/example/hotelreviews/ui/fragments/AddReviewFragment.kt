@@ -43,7 +43,7 @@ class AddReviewFragment : Fragment() {
     private var selectedPlaceId: String = ""
     private var selectedApiRating: Double = 0.0
     private var selectedApiReviewCount: Int = 0
-    private var userRating: Float = 5.0f
+    private var userRating: Float = 3.0f
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -88,6 +88,10 @@ class AddReviewFragment : Fragment() {
         val progressBar = view.findViewById<ProgressBar>(R.id.save_progress_bar)
         val ratingBar = view.findViewById<RatingBar>(R.id.rating_bar)
         val logoutButton = view.findViewById<View>(R.id.logout_button)
+
+        // Initialize UI with default value
+        ratingBar.rating = userRating
+        ratingText.text = getString(R.string.x_out_of_5_stars, userRating.toInt().toString())
 
         setupPlacesAutocomplete(hotelNameEditText, cityEditText)
 
@@ -156,6 +160,7 @@ class AddReviewFragment : Fragment() {
 
         autocompleteFragment.setPlaceFields(listOf(
             Place.Field.ID, 
+            Place.Field.NAME,
             Place.Field.DISPLAY_NAME,
             Place.Field.FORMATTED_ADDRESS,
             Place.Field.ADDRESS_COMPONENTS, 
@@ -168,7 +173,7 @@ class AddReviewFragment : Fragment() {
 
         autocompleteFragment.setOnPlaceSelectedListener(object : PlaceSelectionListener {
             override fun onPlaceSelected(place: Place) {
-                selectedHotelName = place.displayName ?: ""
+                selectedHotelName = place.displayName ?: place.name ?: ""
                 selectedPlaceId = place.id ?: ""
                 selectedApiRating = place.rating ?: 0.0
                 selectedApiReviewCount = place.userRatingCount ?: 0
@@ -176,9 +181,20 @@ class AddReviewFragment : Fragment() {
                 
                 hotelNameEditText.setText(selectedHotelName)
                 
+                var cityFound = false
                 place.addressComponents?.asList()?.forEach { component ->
                     if (component.types.contains("locality")) {
                         selectedHotelCity = component.name
+                        cityEditText.setText(selectedHotelCity)
+                        cityFound = true
+                    }
+                }
+                
+                if (!cityFound && selectedHotelAddress.isNotEmpty()) {
+                    // Fallback to extract city from formatted address if locality component is missing
+                    val parts = selectedHotelAddress.split(",")
+                    if (parts.size >= 2) {
+                        selectedHotelCity = parts[parts.size - 2].trim()
                         cityEditText.setText(selectedHotelCity)
                     }
                 }
