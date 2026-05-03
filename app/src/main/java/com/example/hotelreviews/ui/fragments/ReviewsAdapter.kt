@@ -20,6 +20,7 @@ class ReviewsAdapter(private var reviews: List<Review>) : RecyclerView.Adapter<R
         val hotelCityText: TextView = view.findViewById(R.id.hotel_city_text)
         val hotelRatingBar: RatingBar = view.findViewById(R.id.hotel_rating_bar)
         val descriptionText: TextView = view.findViewById(R.id.review_description_text)
+        val apiRatingBadge: View = view.findViewById(R.id.api_rating_badge)
         val apiRatingText: TextView = view.findViewById(R.id.api_rating_text)
     }
 
@@ -35,11 +36,20 @@ class ReviewsAdapter(private var reviews: List<Review>) : RecyclerView.Adapter<R
         holder.hotelRatingBar.rating = review.rating.toFloat()
         holder.descriptionText.text = review.description
         
-        holder.apiRatingText.text = String.format("%.1f (%d)", review.apiRating, review.apiReviewCount)
+        if (review.apiRating > 0) {
+            holder.apiRatingBadge.visibility = View.VISIBLE
+            holder.apiRatingText.text = String.format("%.1f (%d)", review.apiRating, review.apiReviewCount)
+        } else {
+            holder.apiRatingBadge.visibility = View.GONE
+        }
 
         if (review.imageUrl.isNotEmpty()) {
             holder.imageCard.visibility = View.VISIBLE
-            Picasso.get().load(review.imageUrl).into(holder.imageView)
+            Picasso.get()
+                .load(review.imageUrl)
+                .placeholder(android.R.drawable.ic_menu_gallery)
+                .error(android.R.drawable.ic_menu_report_image)
+                .into(holder.imageView)
         } else {
             holder.imageCard.visibility = View.GONE
         }
