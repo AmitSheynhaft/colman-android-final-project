@@ -20,6 +20,22 @@ class UserViewModel : ViewModel() {
 
     private val currentUserId: String? = AuthModel.getCurrentUser()?.uid
 
+    private val _user = MutableLiveData<User>()
+    val user: LiveData<User> = _user
+
+    fun fetchUser() {
+        currentUserId?.let { id ->
+            UserModel.getUserById(id).observeForever { localUser ->
+                if (localUser != null) {
+                    _user.postValue(localUser)
+                }
+            }
+            UserModel.refreshUser(id) {
+                // The observer on getUserById will pick up changes
+            }
+        }
+    }
+
     fun getCurrentUser(): LiveData<User>? {
         return currentUserId?.let { UserModel.getUserById(it) }
     }

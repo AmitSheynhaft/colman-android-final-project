@@ -58,10 +58,15 @@ class RegisterFragment : Fragment() {
         val passwordEditText = view.findViewById<EditText>(R.id.password_edit_text)
         val selectImageButton = view.findViewById<View>(R.id.select_image_button)
         val registerButton = view.findViewById<Button>(R.id.register_button)
+        val loginText = view.findViewById<View>(R.id.login_text)
         val progressBar = view.findViewById<ProgressBar>(R.id.register_progress_bar)
 
         selectImageButton.setOnClickListener {
             galleryLauncher.launch("image/*")
+        }
+
+        loginText.setOnClickListener {
+            findNavController().navigate(R.id.action_registerFragment_to_loginFragment)
         }
 
         registerButton.setOnClickListener {
