@@ -2,8 +2,8 @@
     <string name="app_name">StayRate</string>
     <string name="login">Sign In</string>
     <string name="register">Sign up</string>
-    <string name="email">Username</string>
-    <string name="email_hint">Enter your username</string>
+    <string name="email">User email</string>
+    <string name="email_hint">Enter your user email</string>
     <string name="password">Password</string>
     <string name="password_hint">Enter your password</string>
     <string name="dont_have_account">Don\'t have an account? Sign up</string>

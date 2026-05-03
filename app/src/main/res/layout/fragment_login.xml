@@ -31,7 +31,7 @@
                 android:layout_width="45dp"
                 android:layout_height="45dp"
                 android:layout_gravity="center"
-                android:src="@android:drawable/ic_menu_today"
+                android:src="@drawable/ic_hotel"
                 app:tint="@color/white" />
         </androidx.cardview.widget.CardView>
 
@@ -50,7 +50,7 @@
                 android:layout_height="16dp"
                 android:layout_gravity="center"
                 android:src="@android:drawable/btn_star_big_on"
-                app:tint="@color/white" />
+                app:tint="@color/purple_primary" />
         </androidx.cardview.widget.CardView>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
