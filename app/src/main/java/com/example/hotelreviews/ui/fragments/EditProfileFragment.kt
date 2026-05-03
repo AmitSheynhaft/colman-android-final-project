@@ -17,12 +17,14 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.example.hotelreviews.R
+import com.example.hotelreviews.viewmodel.AuthViewModel
 import com.example.hotelreviews.viewmodel.UserViewModel
 import com.squareup.picasso.Picasso
 
 class EditProfileFragment : Fragment() {
 
     private val userViewModel: UserViewModel by viewModels()
+    private val authViewModel: AuthViewModel by viewModels()
     private var selectedImageBitmap: Bitmap? = null
     private lateinit var galleryLauncher: ActivityResultLauncher<String>
 
@@ -59,6 +61,14 @@ class EditProfileFragment : Fragment() {
         saveButton = view.findViewById(R.id.save_button)
         progressBar = view.findViewById(R.id.progress_bar)
         val selectImageButton = view.findViewById<View>(R.id.select_image_button)
+        val logoutButton = view.findViewById<View>(R.id.logout_button)
+
+        logoutButton.setOnClickListener {
+            authViewModel.logout()
+            findNavController().navigate(R.id.loginFragment) {
+                popUpTo(R.id.nav_graph) { inclusive = true }
+            }
+        }
 
         selectImageButton.setOnClickListener {
             galleryLauncher.launch("image/*")

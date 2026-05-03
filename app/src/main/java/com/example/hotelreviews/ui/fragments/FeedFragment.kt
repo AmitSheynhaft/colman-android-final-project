@@ -8,15 +8,18 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.hotelreviews.R
+import com.example.hotelreviews.viewmodel.AuthViewModel
 import com.example.hotelreviews.viewmodel.ReviewViewModel
 
 class FeedFragment : Fragment() {
 
     private val viewModel: ReviewViewModel by viewModels()
+    private val authViewModel: AuthViewModel by viewModels()
     private lateinit var adapter: ReviewsAdapter
 
     override fun onCreateView(
@@ -31,6 +34,7 @@ class FeedFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         
         val subtitleText = view.findViewById<TextView>(R.id.subtitle_text)
+        val logoutButton = view.findViewById<View>(R.id.logout_button)
         val recyclerView = view.findViewById<RecyclerView>(R.id.feed_recycler_view)
         val progressBar = view.findViewById<ProgressBar>(R.id.feed_progress_bar)
         val swipeRefresh = view.findViewById<SwipeRefreshLayout>(R.id.swipe_refresh_layout)
@@ -51,6 +55,13 @@ class FeedFragment : Fragment() {
         
         swipeRefresh.setOnRefreshListener {
             viewModel.refreshReviews()
+        }
+
+        logoutButton.setOnClickListener {
+            authViewModel.logout()
+            findNavController().navigate(R.id.loginFragment) {
+                popUpTo(R.id.nav_graph) { inclusive = true }
+            }
         }
     }
 
