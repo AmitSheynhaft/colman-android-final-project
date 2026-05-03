@@ -24,6 +24,7 @@ import com.example.hotelreviews.R
 import com.example.hotelreviews.model.Review
 import com.example.hotelreviews.viewmodel.AuthViewModel
 import com.example.hotelreviews.viewmodel.ReviewViewModel
+import com.example.hotelreviews.viewmodel.UserViewModel
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener
@@ -33,6 +34,7 @@ class AddReviewFragment : Fragment() {
 
     private val viewModel: ReviewViewModel by viewModels()
     private val authViewModel: AuthViewModel by viewModels()
+    private val userViewModel: UserViewModel by viewModels()
     private var selectedImageBitmap: Bitmap? = null
     private lateinit var cameraLauncher: ActivityResultLauncher<Void?>
     private lateinit var galleryLauncher: ActivityResultLauncher<String>
@@ -44,6 +46,8 @@ class AddReviewFragment : Fragment() {
     private var selectedApiRating: Double = 0.0
     private var selectedApiReviewCount: Int = 0
     private var userRating: Float = 3.0f
+    private var currentUserName: String = ""
+    private var currentUserProfileImageUrl: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -99,6 +103,14 @@ class AddReviewFragment : Fragment() {
 
         setupPlacesAutocomplete(hotelNameEditText, cityEditText)
 
+        userViewModel.user.observe(viewLifecycleOwner) { user ->
+            if (user != null) {
+                currentUserName = user.name
+                currentUserProfileImageUrl = user.profileImageUrl
+            }
+        }
+        userViewModel.fetchUser()
+
         logoutButton.setOnClickListener {
             authViewModel.logout()
             findNavController().navigate(R.id.loginFragment) {
@@ -136,8 +148,23 @@ class AddReviewFragment : Fragment() {
                 return@setOnClickListener
             }
 
+            // Ensure user identity is captured
+            val finalUserName = if (currentUserName.isEmpty()) {
+                userViewModel.user.value?.name ?: ""
+            } else {
+                currentUserName
+            }
+            
+            val finalProfileImage = if (currentUserProfileImageUrl.isEmpty()) {
+                userViewModel.user.value?.profileImageUrl ?: ""
+            } else {
+                currentUserProfileImageUrl
+            }
+
             val review = Review(
                 hotelName = name,
+                userName = finalUserName,
+                userProfileImageUrl = finalProfileImage,
                 address = selectedHotelAddress.ifEmpty { city },
                 description = desc,
                 city = city,

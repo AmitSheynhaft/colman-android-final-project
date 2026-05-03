@@ -10,6 +10,8 @@ data class Review(
     @DocumentId 
     var id: String = "",
     var userId: String = "",
+    var userName: String = "",
+    var userProfileImageUrl: String = "",
     var hotelName: String = "",
     var address: String = "",
     var city: String = "",

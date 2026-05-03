@@ -56,4 +56,6 @@
     <string name="error_select_hotel">Please select a hotel</string>
     <string name="search_hotel_hint">Search for a hotel...</string>
     <string name="search_google_places">Search Google Places</string>
+    <string name="reviewed_by">By %1$s</string>
+    <string name="reviewer_name">Reviewer Name</string>
 </resources>

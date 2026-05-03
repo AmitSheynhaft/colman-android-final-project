@@ -11,13 +11,16 @@ import com.example.hotelreviews.R
 import com.example.hotelreviews.model.Review
 import com.squareup.picasso.Picasso
 
-class ReviewsAdapter(private var reviews: List<Review>) : RecyclerView.Adapter<ReviewsAdapter.ReviewViewHolder>() {
+class ReviewsAdapter(private var reviews: List<Review>, private val showUserName: Boolean = true) : RecyclerView.Adapter<ReviewsAdapter.ReviewViewHolder>() {
 
     class ReviewViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val imageView: ImageView = view.findViewById(R.id.review_image)
         val imageCard: View = view.findViewById(R.id.image_card)
         val hotelNameText: TextView = view.findViewById(R.id.hotel_name_text)
         val hotelCityText: TextView = view.findViewById(R.id.hotel_city_text)
+        val userNameText: TextView = view.findViewById(R.id.user_name_text)
+        val userProfileCard: View = view.findViewById(R.id.user_profile_card)
+        val userProfileImage: ImageView = view.findViewById(R.id.user_profile_image)
         val hotelRatingBar: RatingBar = view.findViewById(R.id.hotel_rating_bar)
         val descriptionText: TextView = view.findViewById(R.id.review_description_text)
         val apiRatingBadge: View = view.findViewById(R.id.api_rating_badge)
@@ -35,6 +38,27 @@ class ReviewsAdapter(private var reviews: List<Review>) : RecyclerView.Adapter<R
         holder.hotelCityText.text = if (review.address.isNotEmpty()) review.address else review.city
         holder.hotelRatingBar.rating = review.rating.toFloat()
         holder.descriptionText.text = review.description
+        
+        if (showUserName) {
+            holder.userNameText.visibility = View.VISIBLE
+            holder.userProfileCard.visibility = View.VISIBLE
+            
+            val displayUserName = if (review.userName.isNullOrBlank()) "Anonymous" else review.userName
+            holder.userNameText.text = holder.itemView.context.getString(R.string.reviewed_by, displayUserName)
+            
+            if (!review.userProfileImageUrl.isNullOrBlank()) {
+                Picasso.get()
+                    .load(review.userProfileImageUrl)
+                    .placeholder(R.drawable.ic_person)
+                    .error(R.drawable.ic_person)
+                    .into(holder.userProfileImage)
+            } else {
+                holder.userProfileImage.setImageResource(R.drawable.ic_person)
+            }
+        } else {
+            holder.userNameText.visibility = View.GONE
+            holder.userProfileCard.visibility = View.GONE
+        }
         
         if (review.apiRating > 0) {
             holder.apiRatingBadge.visibility = View.VISIBLE
