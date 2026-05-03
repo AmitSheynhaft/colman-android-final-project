@@ -58,10 +58,8 @@ class UserViewModel : ViewModel() {
                 }
             }
         } else {
-            // If no new image, we might need the current image URL or just update name.
-            // For simplicity in this step, we'll assume we need to fetch existing user first or just update name.
-            // Let's fetch current user from local DB to get existing image URL.
-            val currentUser = UserModel.getUserById(userId).value
+            // Get the current user value from the observed _user LiveData
+            val currentUser = _user.value
             saveUser(userId, name, currentUser?.profileImageUrl ?: "", onComplete)
         }
     }

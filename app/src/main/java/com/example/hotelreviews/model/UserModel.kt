@@ -72,7 +72,8 @@ object UserModel {
                         onComplete(uri.toString())
                     }
                 }
-            }.addOnFailureListener {
+            }.addOnFailureListener { exception ->
+                android.util.Log.e("UserModel", "Image upload failed: ${exception.message}", exception)
                 MyApplication.Globals.mainHandler.post {
                     onComplete(null)
                 }
