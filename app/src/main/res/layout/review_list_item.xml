@@ -15,36 +15,17 @@
         android:layout_height="wrap_content"
         android:padding="16dp">
 
-        <androidx.cardview.widget.CardView
-            android:id="@+id/image_card"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="0dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <ImageView
-                android:id="@+id/review_image"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:scaleType="centerCrop"
-                android:src="@android:drawable/ic_menu_gallery" />
-        </androidx.cardview.widget.CardView>
-
         <TextView
             android:id="@+id/hotel_name_text"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
             android:text="Hotel Name"
             android:textColor="@color/black"
             android:textSize="17sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/image_card"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_goneMarginStart="0dp" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/hotel_city_text"
@@ -112,7 +93,29 @@
             android:textSize="14sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="@id/hotel_name_text"
-            app:layout_constraintTop_toBottomOf="@id/hotel_rating_bar" />
+            app:layout_constraintTop_toBottomOf="@id/hotel_rating_bar"
+            app:layout_constraintBottom_toTopOf="@id/image_card" />
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/image_card"
+            android:layout_width="0dp"
+            android:layout_height="180dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="4dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="0dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/review_description_text"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <ImageView
+                android:id="@+id/review_image"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:src="@android:drawable/ic_menu_gallery" />
+        </com.google.android.material.card.MaterialCardView>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

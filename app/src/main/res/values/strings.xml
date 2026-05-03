@@ -55,4 +55,5 @@
     <string name="error_fill_all_fields">Please fill all fields</string>
     <string name="error_select_hotel">Please select a hotel</string>
     <string name="search_hotel_hint">Search for a hotel...</string>
+    <string name="search_google_places">Search Google Places</string>
 </resources>

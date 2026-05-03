@@ -45,7 +45,11 @@ class ReviewsAdapter(private var reviews: List<Review>) : RecyclerView.Adapter<R
 
         if (review.imageUrl.isNotEmpty()) {
             holder.imageCard.visibility = View.VISIBLE
-            Picasso.get().load(review.imageUrl).into(holder.imageView)
+            Picasso.get()
+                .load(review.imageUrl)
+                .placeholder(android.R.drawable.ic_menu_gallery)
+                .error(android.R.drawable.ic_menu_report_image)
+                .into(holder.imageView)
         } else {
             holder.imageCard.visibility = View.GONE
         }

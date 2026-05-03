@@ -87,6 +87,8 @@ object ReviewModel {
                     MyApplication.Globals.mainHandler.post {
                         onComplete(uri.toString())
                     }
+                }.addOnFailureListener {
+                    MyApplication.Globals.mainHandler.post { onComplete(null) }
                 }
             }.addOnFailureListener {
                 MyApplication.Globals.mainHandler.post {
