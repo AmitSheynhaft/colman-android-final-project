@@ -12,6 +12,7 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -51,7 +52,16 @@ class FeedFragment : Fragment() {
         val sortNewestButton = view.findViewById<MaterialButton>(R.id.sort_newest_button)
         val sortOldestButton = view.findViewById<MaterialButton>(R.id.sort_oldest_button)
         
-        adapter = ReviewsAdapter(emptyList())
+        adapter = ReviewsAdapter(
+            reviews = emptyList(),
+            onUserClick = { userId, userName ->
+                val bundle = Bundle().apply {
+                    putString("userId", userId)
+                    putString("userName", userName)
+                }
+                findNavController().navigate(R.id.action_feedFragment_to_userReviewsFragment, bundle)
+            }
+        )
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         recyclerView.adapter = adapter
         

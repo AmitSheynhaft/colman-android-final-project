@@ -16,7 +16,8 @@ class ReviewsAdapter(
     private val showUserName: Boolean = true,
     private val showActions: Boolean = false,
     private val onEditClick: ((Review) -> Unit)? = null,
-    private val onDeleteClick: ((Review) -> Unit)? = null
+    private val onDeleteClick: ((Review) -> Unit)? = null,
+    private val onUserClick: ((String, String) -> Unit)? = null
 ) : RecyclerView.Adapter<ReviewsAdapter.ReviewViewHolder>() {
 
     class ReviewViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -55,6 +56,15 @@ class ReviewsAdapter(
             val displayUserName = if (review.userName.isNullOrBlank()) "Anonymous" else review.userName
             holder.userNameText.text = holder.itemView.context.getString(R.string.reviewed_by, displayUserName)
             
+            val onProfileClick = View.OnClickListener {
+                if (!review.userId.isNullOrBlank()) {
+                    onUserClick?.invoke(review.userId, displayUserName)
+                }
+            }
+            
+            holder.userNameText.setOnClickListener(onProfileClick)
+            holder.userProfileCard.setOnClickListener(onProfileClick)
+
             if (!review.userProfileImageUrl.isNullOrBlank()) {
                 Picasso.get()
                     .load(review.userProfileImageUrl)
