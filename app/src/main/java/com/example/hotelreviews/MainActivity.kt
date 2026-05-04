@@ -34,11 +34,17 @@ class MainActivity : AppCompatActivity() {
         // Observe auth state globally to handle logout/session expiration
         val auth = com.google.firebase.auth.FirebaseAuth.getInstance()
         auth.addAuthStateListener { firebaseAuth ->
-            val currentDest = navController.currentDestination?.id
             if (firebaseAuth.currentUser == null) {
-                // If we are not already on login or register, reset graph to go to login
+                // Not logged in - ensure we are on the login screen
+                val currentDest = navController.currentDestination?.id
                 if (currentDest != null && currentDest != R.id.loginFragment && currentDest != R.id.registerFragment) {
-                    navController.setGraph(R.id.nav_graph)
+                    // Using a post to ensure navigation happens on the main thread and after current layout pass
+                    binding.root.post {
+                        navController.navigate(R.id.loginFragment) {
+                            // Pop up to the very root of the graph and clear it
+                            popUpTo(R.id.nav_graph) { inclusive = true }
+                        }
+                    }
                 }
             }
         }
