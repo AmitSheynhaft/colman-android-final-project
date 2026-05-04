@@ -39,9 +39,9 @@ class MainActivity : AppCompatActivity() {
                     try {
                         val currentDestId = navController.currentDestination?.id
                         if (currentDestId != null && currentDestId != R.id.loginFragment && currentDestId != R.id.registerFragment) {
-                            // Standard way to reset to start destination: navigate to it and pop everything inclusive of start
+                            // Reset the entire app back stack and land on login after logout/session expiration.
                             navController.navigate(R.id.loginFragment) {
-                                popUpTo(navController.graph.startDestinationId) {
+                                popUpTo(R.id.nav_graph) {
                                     inclusive = true
                                 }
                                 launchSingleTop = true

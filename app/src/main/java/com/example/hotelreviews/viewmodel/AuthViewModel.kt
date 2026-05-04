@@ -73,9 +73,9 @@ class AuthViewModel : ViewModel() {
     }
 
     fun logout() {
-        // Clear remembered email if requested by the user
+        // Clear any persisted login details so logout never keeps remembered identity.
         MyApplication.Globals.appContext?.getSharedPreferences("login_prefs", android.content.Context.MODE_PRIVATE)
-            ?.edit()?.remove("remembered_email")?.apply()
+            ?.edit()?.clear()?.apply()
 
         AuthModel.logout()
         _user.value = null
