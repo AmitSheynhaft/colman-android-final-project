@@ -86,12 +86,83 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
+    <LinearLayout
+        android:id="@+id/filter_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        android:orientation="vertical"
+        android:paddingHorizontal="16dp"
+        android:paddingBottom="12dp"
+        app:layout_constraintTop_toBottomOf="@id/header_layout">
+
+        <EditText
+            android:id="@+id/search_edit_text"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:background="@drawable/bg_api_rating"
+            android:drawableStart="@android:drawable/ic_menu_search"
+            android:drawablePadding="8dp"
+            android:hint="Filter by hotel or city..."
+            android:inputType="text"
+            android:paddingHorizontal="12dp"
+            android:textSize="14sp" />
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:text="Sort by date:"
+                    android:textColor="@color/gray_text"
+                    android:textSize="12sp"
+                    android:layout_marginEnd="8dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/sort_newest_button"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:paddingHorizontal="8dp"
+                    android:text="Newest"
+                    android:textAllCaps="false"
+                    android:textSize="12sp"
+                    app:cornerRadius="18dp"
+                    app:strokeColor="@color/purple_primary" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/sort_oldest_button"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:layout_marginStart="8dp"
+                    android:paddingHorizontal="8dp"
+                    android:text="Oldest"
+                    android:textAllCaps="false"
+                    android:textSize="12sp"
+                    app:cornerRadius="18dp"
+                    app:strokeColor="@color/gray_text"
+                    android:textColor="@color/gray_text"/>
+            </LinearLayout>
+        </HorizontalScrollView>
+    </LinearLayout>
+
     <View
         android:id="@+id/divider"
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:background="#E0E0E0"
-        app:layout_constraintTop_toBottomOf="@id/header_layout" />
+        app:layout_constraintTop_toBottomOf="@id/filter_layout" />
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipe_refresh_layout"

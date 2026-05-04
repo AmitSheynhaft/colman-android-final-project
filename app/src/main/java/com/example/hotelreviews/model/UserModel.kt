@@ -49,6 +49,10 @@ object UserModel {
         usersCollection.document(user.id).set(user).addOnSuccessListener {
             MyApplication.Globals.executorService.execute {
                 userDao.insert(user)
+                // Force immediate sync of shared prefs for this user
+                MyApplication.Globals.appContext?.getSharedPreferences("TAG", android.content.Context.MODE_PRIVATE)
+                    ?.edit()?.putLong(LAST_UPDATED + user.id, user.lastUpdated)?.apply()
+
                 MyApplication.Globals.mainHandler.post {
                     onComplete()
                 }
@@ -62,19 +66,28 @@ object UserModel {
         MyApplication.Globals.executorService.execute {
             val storageRef = com.google.firebase.storage.FirebaseStorage.getInstance().reference
             val imageRef = storageRef.child("profile_images/$userId.jpg")
+            
+            // Ultra Optimization: 160x160 is more than enough for profile icons
+            val width = bitmap.width
+            val height = bitmap.height
+            val ratio = width.toFloat() / height.toFloat()
+            val maxDim = 160
+            val finalWidth = if (width > height) maxDim else (maxDim * ratio).toInt()
+            val finalHeight = if (height > width) maxDim else (maxDim / ratio).toInt()
+            val scaledBitmap = android.graphics.Bitmap.createScaledBitmap(bitmap, finalWidth, finalHeight, true)
+
             val baos = java.io.ByteArrayOutputStream()
-            bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 70, baos)
+            // Quality 25 for extreme speed (tiny file size ~4-7KB)
+            scaledBitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 25, baos)
             val data = baos.toByteArray()
 
-            imageRef.putBytes(data).addOnSuccessListener {
-                imageRef.downloadUrl.addOnSuccessListener { uri: android.net.Uri ->
-                    MyApplication.Globals.mainHandler.post {
-                        onComplete(uri.toString())
-                    }
-                }
-            }.addOnFailureListener {
+            imageRef.putBytes(data).continueWithTask { task ->
+                if (!task.isSuccessful) task.exception?.let { throw it }
+                imageRef.downloadUrl
+            }.addOnCompleteListener { task ->
+                val result = if (task.isSuccessful) task.result.toString() else null
                 MyApplication.Globals.mainHandler.post {
-                    onComplete(null)
+                    onComplete(result)
                 }
             }
         }

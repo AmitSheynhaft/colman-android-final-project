@@ -20,19 +20,31 @@ class UserViewModel : ViewModel() {
 
     private val currentUserId: String? = AuthModel.getCurrentUser()?.uid
 
-    private val _user = MutableLiveData<User>()
-    val user: LiveData<User> = _user
+    private val _user = MutableLiveData<User?>()
+    val user: LiveData<User?> = _user
+
+    private var userObserver: androidx.lifecycle.Observer<User>? = null
 
     fun fetchUser() {
-        currentUserId?.let { id ->
-            UserModel.getUserById(id).observeForever { localUser ->
-                if (localUser != null) {
-                    _user.postValue(localUser)
+        val userId = currentUserId ?: return
+        
+        // Always refresh from local DB first
+        UserModel.getUserById(userId).observeForever(object : androidx.lifecycle.Observer<User> {
+            override fun onChanged(value: User) {
+                if (value != null) {
+                    _user.postValue(value)
                 }
             }
-            UserModel.refreshUser(id) {
-                // The observer on getUserById will pick up changes
-            }
+        })
+        
+        // Then try to refresh from network
+        UserModel.refreshUser(userId)
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        currentUserId?.let { id ->
+            userObserver?.let { UserModel.getUserById(id).removeObserver(it) }
         }
     }
 
@@ -58,19 +70,23 @@ class UserViewModel : ViewModel() {
                 }
             }
         } else {
-            // If no new image, we might need the current image URL or just update name.
-            // For simplicity in this step, we'll assume we need to fetch existing user first or just update name.
-            // Let's fetch current user from local DB to get existing image URL.
-            val currentUser = UserModel.getUserById(userId).value
-            saveUser(userId, name, currentUser?.profileImageUrl ?: "", onComplete)
+            // Use current value from LiveData, fallback to empty but don't overwrite with empty if we have one
+            val currentImageUrl = _user.value?.profileImageUrl ?: ""
+            saveUser(userId, name, currentImageUrl, onComplete)
         }
     }
 
     private fun saveUser(userId: String, name: String, imageUrl: String, onComplete: () -> Unit) {
-        val user = User(userId, AuthModel.getCurrentUser()?.email ?: "", name, imageUrl, System.currentTimeMillis())
+        val email = AuthModel.getCurrentUser()?.email ?: _user.value?.email ?: ""
+        val user = User(userId, email, name, imageUrl, System.currentTimeMillis())
         UserModel.addUser(user) {
-            _isLoading.value = false
-            onComplete()
+            // Also update the user's details in all their existing reviews
+            com.example.hotelreviews.model.ReviewModel.updateUserInReviews(userId, name, imageUrl) {
+                // Update local LiveData immediately for instant UI feedback
+                _user.postValue(user)
+                _isLoading.value = false
+                onComplete()
+            }
         }
     }
 

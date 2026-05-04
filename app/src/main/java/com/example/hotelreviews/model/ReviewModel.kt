@@ -63,11 +63,13 @@ object ReviewModel {
     }
 
     fun addReview(review: Review, onComplete: () -> Unit) {
-        val docRef = reviewsCollection.document()
-        review.id = docRef.id
+        if (review.id.isEmpty()) {
+            val docRef = reviewsCollection.document()
+            review.id = docRef.id
+        }
         review.lastUpdated = System.currentTimeMillis()
         review.isDeleted = false
-        docRef.set(review).addOnSuccessListener {
+        reviewsCollection.document(review.id).set(review).addOnSuccessListener {
             MyApplication.Globals.executorService.execute {
                 reviewDao.insert(review)
                 MyApplication.Globals.mainHandler.post {
@@ -79,25 +81,81 @@ object ReviewModel {
         }
     }
 
+    fun deleteReview(review: Review, onComplete: () -> Unit) {
+        review.isDeleted = true
+        review.lastUpdated = System.currentTimeMillis()
+        reviewsCollection.document(review.id).set(review).addOnSuccessListener {
+            MyApplication.Globals.executorService.execute {
+                reviewDao.insert(review)
+                MyApplication.Globals.mainHandler.post {
+                    onComplete()
+                }
+            }
+        }.addOnFailureListener {
+            onComplete()
+        }
+    }
+
+    fun updateUserInReviews(userId: String, newName: String, newImageUrl: String, onComplete: () -> Unit) {
+        // 1. Update Firestore
+        reviewsCollection.whereEqualTo("userId", userId).get().addOnSuccessListener { snapshot ->
+            val batch = firestore.batch()
+            for (doc in snapshot.documents) {
+                batch.update(doc.reference, "userName", newName, "userProfileImageUrl", newImageUrl, "lastUpdated", System.currentTimeMillis())
+            }
+            batch.commit().addOnSuccessListener {
+                // 2. Update Room
+                MyApplication.Globals.executorService.execute {
+                    reviewDao.updateUserInfo(userId, newName, newImageUrl)
+                    MyApplication.Globals.mainHandler.post {
+                        onComplete()
+                    }
+                }
+            }.addOnFailureListener { onComplete() }
+        }.addOnFailureListener { onComplete() }
+    }
+
     fun uploadImage(bitmap: android.graphics.Bitmap, name: String, onComplete: (String?) -> Unit) {
         MyApplication.Globals.executorService.execute {
             val storageRef = com.google.firebase.storage.FirebaseStorage.getInstance().reference
             val imageRef = storageRef.child("images/$name.jpg")
+
+            // Optimized for reviews: 800px is enough for mobile viewing
+            val width = bitmap.width
+            val height = bitmap.height
+            val ratio = width.toFloat() / height.toFloat()
+            val maxDim = 800
+            var finalWidth = width
+            var finalHeight = height
+
+            if (width > maxDim || height > maxDim) {
+                if (width > height) {
+                    finalWidth = maxDim
+                    finalHeight = (maxDim / ratio).toInt()
+                } else {
+                    finalHeight = maxDim
+                    finalWidth = (maxDim * ratio).toInt()
+                }
+            }
+
+            val scaledBitmap = if (finalWidth != width) {
+                android.graphics.Bitmap.createScaledBitmap(bitmap, finalWidth, finalHeight, true)
+            } else {
+                bitmap
+            }
+
             val baos = java.io.ByteArrayOutputStream()
-            bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 70, baos)
+            // Quality 60 is a good balance for speed and clarity
+            scaledBitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 60, baos)
             val data = baos.toByteArray()
 
-            imageRef.putBytes(data).addOnSuccessListener {
-                imageRef.downloadUrl.addOnSuccessListener { uri: android.net.Uri ->
-                    MyApplication.Globals.mainHandler.post {
-                        onComplete(uri.toString())
-                    }
-                }.addOnFailureListener {
-                    MyApplication.Globals.mainHandler.post { onComplete(null) }
-                }
-            }.addOnFailureListener {
+            imageRef.putBytes(data).continueWithTask { task ->
+                if (!task.isSuccessful) task.exception?.let { throw it }
+                imageRef.downloadUrl
+            }.addOnCompleteListener { task ->
+                val result = if (task.isSuccessful) task.result.toString() else null
                 MyApplication.Globals.mainHandler.post {
-                    onComplete(null)
+                    onComplete(result)
                 }
             }
         }
