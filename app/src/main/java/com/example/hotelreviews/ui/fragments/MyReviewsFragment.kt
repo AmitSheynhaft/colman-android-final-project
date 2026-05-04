@@ -18,12 +18,14 @@ import com.example.hotelreviews.R
 import com.example.hotelreviews.model.AuthModel
 import com.example.hotelreviews.viewmodel.AuthViewModel
 import com.example.hotelreviews.viewmodel.ReviewViewModel
+import com.example.hotelreviews.viewmodel.UserViewModel
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class MyReviewsFragment : Fragment() {
 
     private val viewModel: ReviewViewModel by viewModels()
     private val authViewModel: AuthViewModel by viewModels()
+    private val userViewModel: UserViewModel by viewModels()
     private lateinit var adapter: ReviewsAdapter
 
     override fun onCreateView(
@@ -99,7 +101,14 @@ class MyReviewsFragment : Fragment() {
         addFirstReviewButton.setOnClickListener(onAddClick)
 
         logoutButton.setOnClickListener {
+            userViewModel.clearUserData()
             authViewModel.logout()
+            findNavController().navigate(R.id.loginFragment) {
+                popUpTo(R.id.nav_graph) {
+                    inclusive = true
+                }
+                launchSingleTop = true
+            }
         }
     }
 

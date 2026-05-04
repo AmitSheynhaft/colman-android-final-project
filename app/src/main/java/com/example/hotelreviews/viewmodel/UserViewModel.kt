@@ -18,7 +18,13 @@ class UserViewModel : ViewModel() {
     private val _errorMessage = MutableLiveData<String?>()
     val errorMessage: LiveData<String?> = _errorMessage
 
-    private val currentUserId: String? = AuthModel.getCurrentUser()?.uid
+    // Computed every time so it always reflects the current Firebase auth state.
+    private val currentUserId: String?
+        get() = AuthModel.getCurrentUser()?.uid
+
+    // Tracks the last user ID for which an observer was registered, so we can
+    // clean it up even after Firebase has already signed out (currentUserId == null).
+    private var lastFetchedUserId: String? = null
 
     private val _user = MutableLiveData<User?>()
     val user: LiveData<User?> = _user
@@ -27,15 +33,20 @@ class UserViewModel : ViewModel() {
 
     fun fetchUser() {
         val userId = currentUserId ?: return
-        
+        lastFetchedUserId = userId
+
+        userObserver?.let { existingObserver ->
+            UserModel.getUserById(userId).removeObserver(existingObserver)
+        }
+
         // Always refresh from local DB first
-        UserModel.getUserById(userId).observeForever(object : androidx.lifecycle.Observer<User> {
-            override fun onChanged(value: User) {
-                if (value != null) {
-                    _user.postValue(value)
-                }
+        val observer = androidx.lifecycle.Observer<User> { value ->
+            if (value != null) {
+                _user.postValue(value)
             }
-        })
+        }
+        userObserver = observer
+        UserModel.getUserById(userId).observeForever(observer)
         
         // Then try to refresh from network
         UserModel.refreshUser(userId)
@@ -43,7 +54,7 @@ class UserViewModel : ViewModel() {
 
     override fun onCleared() {
         super.onCleared()
-        currentUserId?.let { id ->
+        lastFetchedUserId?.let { id ->
             userObserver?.let { UserModel.getUserById(id).removeObserver(it) }
         }
     }
@@ -92,5 +103,16 @@ class UserViewModel : ViewModel() {
 
     fun clearError() {
         _errorMessage.value = null
+    }
+
+    fun clearUserData() {
+        lastFetchedUserId?.let { id ->
+            userObserver?.let { UserModel.getUserById(id).removeObserver(it) }
+        }
+        userObserver = null
+        lastFetchedUserId = null
+        _user.value = null
+        _errorMessage.value = null
+        _isLoading.value = false
     }
 }

@@ -7,7 +7,6 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.example.hotelreviews.databinding.ActivityMainBinding
 import com.google.android.libraries.places.api.Places
-import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : AppCompatActivity() {
 
@@ -30,30 +29,6 @@ class MainActivity : AppCompatActivity() {
         
         val bottomNav = binding.bottomNavigation
         bottomNav.setupWithNavController(navController)
-
-        // Observe auth state globally to handle logout/session expiration
-        val auth = com.google.firebase.auth.FirebaseAuth.getInstance()
-        auth.addAuthStateListener { firebaseAuth ->
-            if (firebaseAuth.currentUser == null) {
-                binding.root.post {
-                    try {
-                        val currentDestId = navController.currentDestination?.id
-                        if (currentDestId != null && currentDestId != R.id.loginFragment && currentDestId != R.id.registerFragment) {
-                            // Reset the entire app back stack and land on login after logout/session expiration.
-                            navController.navigate(R.id.loginFragment) {
-                                popUpTo(R.id.nav_graph) {
-                                    inclusive = true
-                                }
-                                launchSingleTop = true
-                            }
-                        }
-                    } catch (e: Exception) {
-                        // Fallback: reset the graph completely
-                        navController.setGraph(R.id.nav_graph)
-                    }
-                }
-            }
-        }
 
         navController.addOnDestinationChangedListener { _, destination, _ ->
             if (destination.id == R.id.loginFragment || destination.id == R.id.registerFragment) {

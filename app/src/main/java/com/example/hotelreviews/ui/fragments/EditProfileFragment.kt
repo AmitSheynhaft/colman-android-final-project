@@ -99,7 +99,14 @@ class EditProfileFragment : Fragment() {
         val logoutButton = view.findViewById<View>(R.id.logout_button)
 
         logoutButton.setOnClickListener {
+            userViewModel.clearUserData()
             authViewModel.logout()
+            findNavController().navigate(R.id.loginFragment) {
+                popUpTo(R.id.nav_graph) {
+                    inclusive = true
+                }
+                launchSingleTop = true
+            }
         }
 
         selectImageButton.setOnClickListener {

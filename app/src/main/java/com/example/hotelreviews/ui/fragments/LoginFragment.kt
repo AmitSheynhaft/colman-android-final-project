@@ -14,6 +14,7 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.example.hotelreviews.R
 import com.example.hotelreviews.viewmodel.AuthViewModel
+import com.google.firebase.auth.FirebaseAuth
 
 class LoginFragment : Fragment() {
 
@@ -51,10 +52,10 @@ class LoginFragment : Fragment() {
             rememberMeCheckbox.isChecked = false
         }
 
-        // Only auto-navigate if we have a user AND we didn't just come here from a logout action
-        // (Though signOut should be enough to make user null)
+        // Auto-navigate only when Firebase currently has an authenticated user.
         authViewModel.user.observe(viewLifecycleOwner) { user ->
-            if (user != null) {
+            val isLoggedIn = FirebaseAuth.getInstance().currentUser != null
+            if (user != null && isLoggedIn && findNavController().currentDestination?.id == R.id.loginFragment) {
                 findNavController().navigate(R.id.action_loginFragment_to_myReviewsFragment)
             }
         }
