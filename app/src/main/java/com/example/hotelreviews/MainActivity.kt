@@ -35,15 +35,21 @@ class MainActivity : AppCompatActivity() {
         val auth = com.google.firebase.auth.FirebaseAuth.getInstance()
         auth.addAuthStateListener { firebaseAuth ->
             if (firebaseAuth.currentUser == null) {
-                // Not logged in - ensure we are on the login screen
-                val currentDest = navController.currentDestination?.id
-                if (currentDest != null && currentDest != R.id.loginFragment && currentDest != R.id.registerFragment) {
-                    // Using a post to ensure navigation happens on the main thread and after current layout pass
-                    binding.root.post {
-                        navController.navigate(R.id.loginFragment) {
-                            // Pop up to the very root of the graph and clear it
-                            popUpTo(R.id.nav_graph) { inclusive = true }
+                binding.root.post {
+                    try {
+                        val currentDestId = navController.currentDestination?.id
+                        if (currentDestId != null && currentDestId != R.id.loginFragment && currentDestId != R.id.registerFragment) {
+                            // Standard way to reset to start destination: navigate to it and pop everything inclusive of start
+                            navController.navigate(R.id.loginFragment) {
+                                popUpTo(navController.graph.startDestinationId) {
+                                    inclusive = true
+                                }
+                                launchSingleTop = true
+                            }
                         }
+                    } catch (e: Exception) {
+                        // Fallback: reset the graph completely
+                        navController.setGraph(R.id.nav_graph)
                     }
                 }
             }
