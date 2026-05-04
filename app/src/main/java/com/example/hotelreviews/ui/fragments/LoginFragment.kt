@@ -30,28 +30,53 @@ class LoginFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        if (authViewModel.user.value != null) {
-            findNavController().navigate(R.id.action_loginFragment_to_myReviewsFragment)
-            return
-        }
-
         val emailEditText = view.findViewById<EditText>(R.id.email_edit_text)
         val passwordEditText = view.findViewById<EditText>(R.id.password_edit_text)
         val loginButton = view.findViewById<Button>(R.id.login_button)
         val registerText = view.findViewById<TextView>(R.id.register_text)
         val progressBar = view.findViewById<ProgressBar>(R.id.login_progress_bar)
+        val rememberMeCheckbox = view.findViewById<android.widget.CheckBox>(R.id.remember_me_checkbox)
+
+        // Clear fields initially for safety after logout
+        passwordEditText.setText("")
+
+        // Load remembered email
+        val prefs = requireContext().getSharedPreferences("login_prefs", android.content.Context.MODE_PRIVATE)
+        val rememberedEmail = prefs.getString("remembered_email", "")
+        if (!rememberedEmail.isNullOrEmpty()) {
+            emailEditText.setText(rememberedEmail)
+            rememberMeCheckbox.isChecked = true
+        } else {
+            emailEditText.setText("")
+            rememberMeCheckbox.isChecked = false
+        }
+
+        // Only auto-navigate if we have a user AND we didn't just come here from a logout action
+        // (Though signOut should be enough to make user null)
+        authViewModel.user.observe(viewLifecycleOwner) { user ->
+            if (user != null) {
+                findNavController().navigate(R.id.action_loginFragment_to_myReviewsFragment)
+            }
+        }
 
         loginButton.setOnClickListener {
-            val email = emailEditText.text.toString()
-            val password = passwordEditText.text.toString()
+            val email = emailEditText.text.toString().trim()
+            val password = passwordEditText.text.toString().trim()
 
             if (email.isEmpty() || password.isEmpty()) {
                 Toast.makeText(requireContext(), getString(R.string.error_fill_all_fields), Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
+            // Handle "Remember Me" preference before logging in
+            if (rememberMeCheckbox.isChecked) {
+                prefs.edit().putString("remembered_email", email).apply()
+            } else {
+                prefs.edit().remove("remembered_email").apply()
+            }
+
             authViewModel.login(email, password) {
-                findNavController().navigate(R.id.action_loginFragment_to_myReviewsFragment)
+                // Navigation is handled by the user observer
             }
         }
 
