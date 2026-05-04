@@ -9,7 +9,8 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="24dp">
+        android:padding="24dp"
+        android:paddingBottom="40dp">
 
         <androidx.cardview.widget.CardView
             android:id="@+id/icon_container"
@@ -187,12 +188,14 @@
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:layout_marginTop="32dp"
+            android:layout_marginBottom="24dp"
             android:backgroundTint="#5E43F8"
             android:text="Save Changes"
             android:textAllCaps="false"
             android:textSize="16sp"
             android:textStyle="bold"
             app:cornerRadius="16dp"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintTop_toBottomOf="@id/name_card_container" />
 
         <ProgressBar
