@@ -100,6 +100,7 @@ class EditProfileFragment : Fragment() {
 
         logoutButton.setOnClickListener {
             authViewModel.logout()
+            findNavController().navigate(R.id.action_global_loginFragment)
         }
 
         selectImageButton.setOnClickListener {

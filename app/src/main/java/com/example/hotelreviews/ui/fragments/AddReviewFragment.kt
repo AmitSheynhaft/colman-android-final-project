@@ -262,6 +262,7 @@ class AddReviewFragment : Fragment() {
 
         logoutButton.setOnClickListener {
             authViewModel.logout()
+            findNavController().navigate(R.id.action_global_loginFragment)
         }
 
         galleryButton.setOnClickListener { galleryLauncher.launch("image/*") }

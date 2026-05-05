@@ -35,11 +35,14 @@ class MainActivity : AppCompatActivity() {
         val auth = com.google.firebase.auth.FirebaseAuth.getInstance()
         auth.addAuthStateListener { firebaseAuth ->
             if (firebaseAuth.currentUser == null) {
-                // If we are not already on login or register, go to login
-                val currentDest = navController.currentDestination?.id
-                if (currentDest != R.id.loginFragment && currentDest != R.id.registerFragment) {
-                    navController.navigate(R.id.loginFragment) {
-                        popUpTo(navController.graph.id) { inclusive = true }
+                runOnUiThread {
+                    try {
+                        val currentDest = navController.currentDestination?.id
+                        if (currentDest != null && currentDest != R.id.loginFragment && currentDest != R.id.registerFragment) {
+                            navController.navigate(R.id.action_global_loginFragment)
+                        }
+                    } catch (e: Exception) {
+                        // Navigation might fail if already in progress
                     }
                 }
             }
